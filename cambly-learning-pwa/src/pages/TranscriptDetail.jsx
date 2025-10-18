@@ -29,7 +29,7 @@ const TranscriptDetail = () => {
       const progress = sessionProgressStorage.getTranscriptProgress(foundTranscript.id);
       setTranscriptProgress(progress);
     } else {
-      navigate('/');
+      navigate('');
     }
   }, [id, navigate]);
 
@@ -316,7 +316,7 @@ const TranscriptDetail = () => {
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('')}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft size={20} />

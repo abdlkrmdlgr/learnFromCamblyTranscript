@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, BookOpen, Brain, Target, TrendingUp, FileText, BookOpenCheck, HelpCircle } from 'lucide-react';
 import ImportModal from '../components/ImportModal';
 import LearningCard from '../components/LearningCard';
@@ -8,6 +9,7 @@ import { useSettings } from '../hooks/useSettings';
 import { progressStorage } from '../utils/storage';
 
 const Home = ({ showImportModal, setShowImportModal }) => {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(null); // 'grammar', 'vocabulary', 'quiz'
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [sessionCards, setSessionCards] = useState([]);
@@ -144,7 +146,7 @@ const Home = ({ showImportModal, setShowImportModal }) => {
                   <button
                     onClick={() => {
                       // Navigate to transcript detail page
-                      window.location.href = `/transcript/${transcript.id}`;
+                      navigate(`/transcript/${transcript.id}`);
                     }}
                     className="w-full btn-primary"
                   >
