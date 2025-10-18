@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, BookOpen, Brain, Target, TrendingUp, FileText, BookOpenCheck, HelpCircle } from 'lucide-react';
-import ImportModal from '../components/ImportModal';
 import LearningCard from '../components/LearningCard';
 import QuizCard from '../components/QuizCard';
 import { useTranscripts } from '../hooks/useTranscripts';
@@ -290,16 +289,7 @@ const Home = ({ showImportModal, setShowImportModal }) => {
   }
 
   if (transcripts.length === 0) {
-    return (
-      <>
-        {renderEmptyState()}
-        <ImportModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={handleImport}
-        />
-      </>
-    );
+    return renderEmptyState();
   }
 
   if (sessionComplete) {
@@ -310,16 +300,7 @@ const Home = ({ showImportModal, setShowImportModal }) => {
     return renderLearningSession();
   }
 
-  return (
-    <>
-      {renderMainDashboard()}
-      <ImportModal
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onImport={handleImport}
-      />
-    </>
-  );
+  return renderMainDashboard();
 };
 
 export default Home;

@@ -164,29 +164,20 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
               <Calendar size={16} />
               <span>Conversation Date</span>
             </label>
-            <select
+            <input
+              type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="">Select a date</option>
-              {Array.from({ length: 30 }, (_, i) => {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateString = date.toISOString().split('T')[0];
-                const displayDate = date.toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                });
-                return (
-                  <option key={dateString} value={dateString}>
-                    {displayDate}
-                  </option>
-                );
-              })}
-            </select>
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors hover:border-gray-400"
+              max={new Date().toISOString().split('T')[0]}
+              style={{
+                colorScheme: 'light',
+                cursor: 'pointer'
+              }}
+            />
+            <p className="text-xs text-gray-500">
+              Select the date when this conversation took place
+            </p>
           </div>
 
           {/* File Upload */}
