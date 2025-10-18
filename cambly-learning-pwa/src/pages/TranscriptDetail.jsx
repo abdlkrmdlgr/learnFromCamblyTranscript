@@ -4,6 +4,7 @@ import { ArrowLeft, FileText, BookOpenCheck, HelpCircle, Calendar, BookOpen } fr
 import { transcriptStorage, sessionProgressStorage } from '../utils/storage';
 import LearningCard from '../components/LearningCard';
 import QuizCard from '../components/QuizCard';
+import ConfirmModal from '../components/ConfirmModal';
 
 const TranscriptDetail = () => {
   const { id } = useParams();
@@ -20,6 +21,7 @@ const TranscriptDetail = () => {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
   const [transcriptProgress, setTranscriptProgress] = useState({});
+  const [showRestartModal, setShowRestartModal] = useState(false);
 
   useEffect(() => {
     const foundTranscript = transcriptStorage.getById(id);
@@ -169,6 +171,11 @@ const TranscriptDetail = () => {
     }
   };
 
+  const handleRestartConfirm = () => {
+    startSectionSession(activeSection, false);
+    setShowRestartModal(false);
+  };
+
   if (!transcript) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -223,44 +230,55 @@ const TranscriptDetail = () => {
 
     return (
       <div className="min-h-screen bg-gray-50">
+        {/* Restart Confirmation Modal */}
+        <ConfirmModal
+          isOpen={showRestartModal}
+          onClose={() => setShowRestartModal(false)}
+          onConfirm={handleRestartConfirm}
+          title="Restart Session"
+          message="Are you sure you want to restart this session? Your current progress will be lost and you'll start from the beginning."
+          confirmText="Restart"
+          cancelText="Cancel"
+          type="warning"
+        />
+        
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-4xl mx-auto px-4 py-3 md:py-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
-              <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
+          <div className="max-w-4xl mx-auto px-3 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
                 <button
                   onClick={backToTranscript}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors self-start"
+                  className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors flex-shrink-0"
                 >
-                  <ArrowLeft size={20} />
-                  <span>Back</span>
+                  <ArrowLeft size={18} />
+                  <span className="text-sm">Back</span>
                 </button>
-                <div className="hidden md:block h-6 w-px bg-gray-300"></div>
-                <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-4">
-                  <h1 className="text-lg md:text-xl font-semibold text-gray-900">
+                <div className="h-4 w-px bg-gray-300"></div>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-base md:text-lg font-semibold text-gray-900 truncate">
                     {activeSection === 'grammar' && 'Grammar Practice'}
                     {activeSection === 'vocabulary' && 'Vocabulary Practice'}
                     {activeSection === 'quiz' && 'Quiz Practice'}
                   </h1>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs text-gray-500 mt-0.5">
                     {currentCardIndex + 1} / {sessionCards.length}
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 <button
-                  onClick={() => startSectionSession(activeSection, false)}
-                  className="flex items-center space-x-2 px-3 py-2 text-xs md:text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  onClick={() => setShowRestartModal(true)}
+                  className="px-2 py-1 text-xs text-gray-600 hover:text-gray-900 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
                 >
-                  <span>Restart</span>
+                  Restart
                 </button>
                 {transcriptProgress[activeSection] && !transcriptProgress[activeSection].completed && (
                   <button
                     onClick={() => startSectionSession(activeSection, true)}
-                    className="flex items-center space-x-2 px-3 py-2 text-xs md:text-sm text-blue-600 hover:text-blue-900 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                    className="px-2 py-1 text-xs text-blue-600 hover:text-blue-900 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
                   >
-                    <span className="hidden sm:inline">Resume from {transcriptProgress[activeSection].currentIndex + 1}</span>
-                    <span className="sm:hidden">Resume</span>
+                    Resume
                   </button>
                 )}
               </div>
@@ -313,30 +331,41 @@ const TranscriptDetail = () => {
   // Main transcript view
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Restart Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showRestartModal}
+        onClose={() => setShowRestartModal(false)}
+        onConfirm={handleRestartConfirm}
+        title="Restart Session"
+        message="Are you sure you want to restart this session? Your current progress will be lost and you'll start from the beginning."
+        confirmText="Restart"
+        cancelText="Cancel"
+        type="warning"
+      />
+      
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 mb-6 md:mb-8">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between">
-            <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+        <div className="bg-white rounded-xl shadow-lg p-3 md:p-6 mb-4 md:mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 flex-1 min-w-0">
               <button
                 onClick={() => navigate('')}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors self-start"
+                className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors flex-shrink-0"
               >
-                <ArrowLeft size={20} />
-                <span className="hidden sm:inline">Back to Home</span>
-                <span className="sm:hidden">Back</span>
+                <ArrowLeft size={18} />
+                <span className="hidden sm:inline text-sm">Back</span>
               </button>
-              <div className="hidden md:block h-6 w-px bg-gray-300"></div>
-              <div className="flex-1">
-                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 md:mb-4 leading-tight">{transcript.title}</h1>
-                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-gray-600">
-                  <div className="flex items-center space-x-2">
-                    <Calendar size={16} />
+              <div className="hidden sm:block h-4 w-px bg-gray-300"></div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate">{transcript.title}</h1>
+                <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                  <div className="flex items-center space-x-1">
+                    <Calendar size={12} />
                     <span>{transcript.date}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <BookOpen size={16} />
-                    <span>Created {new Date(transcript.createdAt).toLocaleDateString()}</span>
+                  <div className="flex items-center space-x-1">
+                    <BookOpen size={12} />
+                    <span>{new Date(transcript.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>

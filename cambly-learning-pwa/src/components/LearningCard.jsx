@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 const LearningCard = ({ card, onComplete, showTurkish = false }) => {
   const [showTranslation, setShowTranslation] = useState(showTurkish);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const cardRef = useRef(null);
 
   const handleToggleTranslation = () => {
     setShowTranslation(!showTranslation);
@@ -16,77 +19,114 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
     onComplete('previous');
   };
 
-  const renderGrammarCard = () => (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[500px] flex flex-col">
-      {/* Header */}
-      <div className="flex justify-between items-center p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-          <span className="text-sm font-semibold text-gray-700">Grammar Practice</span>
-        </div>
-        <button
-          onClick={handleToggleTranslation}
-          className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          {showTranslation ? <EyeOff size={16} /> : <Eye size={16} />}
-          <span>{showTranslation ? 'Hide Translation' : 'Show Translation'}</span>
-        </button>
-      </div>
 
+  // Touch handlers for swipe gestures
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrevious();
+    }
+  };
+
+  const renderGrammarCard = () => (
+    <div 
+      ref={cardRef}
+      className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[400px] flex flex-col"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Content */}
-      <div className="flex-1 p-6 flex flex-col justify-center space-y-8">
-        <div className="text-center space-y-4">
-          <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">Original Sentence</h3>
-            <p className="text-xl text-gray-900 font-medium leading-relaxed">
+      <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-6">
+        {/* Translation Toggle */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handleToggleTranslation}
+            className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+          >
+            {showTranslation ? <EyeOff size={14} /> : <Eye size={14} />}
+            <span>{showTranslation ? 'Hide' : 'Show'} Translation</span>
+          </button>
+        </div>
+
+        <div className="text-center space-y-3">
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h3 className="text-xs font-medium text-gray-600 mb-2">Original Sentence</h3>
+            <p className="text-base md:text-lg text-gray-900 font-medium leading-relaxed">
               "{card.data.original}"
             </p>
           </div>
 
-          <div className="bg-green-50 rounded-lg p-6 border border-green-200">
-            <h3 className="text-sm font-medium text-green-700 mb-3">Corrected Version</h3>
-            <p className="text-xl text-green-800 font-medium leading-relaxed">
+          <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+            <h3 className="text-xs font-medium text-green-700 mb-2">Corrected Version</h3>
+            <p className="text-base md:text-lg text-green-800 font-medium leading-relaxed">
               "{card.data.correction}"
             </p>
           </div>
         </div>
 
         {/* Explanations */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {showTranslation && card.data.explanation_tr && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-blue-800 mb-2">Turkish Explanation</h4>
-              <p className="text-blue-700 leading-relaxed">{card.data.explanation_tr}</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <h4 className="text-xs font-semibold text-blue-800 mb-1">Turkish Explanation</h4>
+              <p className="text-sm text-blue-700 leading-relaxed">{card.data.explanation_tr}</p>
             </div>
           )}
 
           {card.data.explanation_en && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">English Explanation</h4>
-              <p className="text-gray-700 leading-relaxed">{card.data.explanation_en}</p>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <h4 className="text-xs font-semibold text-gray-800 mb-1">English Explanation</h4>
+              <p className="text-sm text-gray-700 leading-relaxed">{card.data.explanation_en}</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="p-6 border-t border-gray-200">
-        <div className="flex space-x-4">
+      <div className="p-3 md:p-4 border-t border-gray-200">
+        {/* Mobile Swipe Hint */}
+        <div className="md:hidden text-center mb-3">
+          <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
+            <span>←</span>
+            <span>Swipe to navigate</span>
+            <span>→</span>
+          </p>
+        </div>
+        
+        {/* Desktop Navigation Buttons */}
+        <div className="hidden md:flex space-x-3">
           <button
             onClick={handlePrevious}
-            className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
+            className="flex-1 flex items-center justify-center space-x-1 py-2 px-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             <span>Previous</span>
           </button>
           <button
             onClick={handleNext}
-            className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 font-medium"
+            className="flex-1 flex items-center justify-center space-x-1 py-2 px-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 text-sm font-medium"
           >
             <span>Next</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -96,70 +136,82 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
   );
 
   const renderVocabularyCard = () => (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[500px] flex flex-col">
-      {/* Header */}
-      <div className="flex justify-between items-center p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span className="text-sm font-semibold text-gray-700">Vocabulary Practice</span>
-        </div>
-        <button
-          onClick={handleToggleTranslation}
-          className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          {showTranslation ? <EyeOff size={16} /> : <Eye size={16} />}
-          <span>{showTranslation ? 'Hide Translation' : 'Show Translation'}</span>
-        </button>
-      </div>
-
+    <div 
+      ref={cardRef}
+      className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[400px] flex flex-col"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Content */}
-      <div className="flex-1 p-6 flex flex-col justify-center space-y-8">
+      <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-6">
+        {/* Translation Toggle */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handleToggleTranslation}
+            className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+          >
+            {showTranslation ? <EyeOff size={14} /> : <Eye size={14} />}
+            <span>{showTranslation ? 'Hide' : 'Show'} Translation</span>
+          </button>
+        </div>
+
         {/* Word and Definition */}
-        <div className="text-center space-y-6">
-          <div className="bg-blue-50 rounded-lg p-8 border border-blue-200">
-            <h2 className="text-3xl font-bold text-blue-900 mb-4">
+        <div className="text-center space-y-4">
+          <div className="bg-blue-50 rounded-lg p-4 md:p-6 border border-blue-200">
+            <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-3">
               {card.data.word}
             </h2>
-            <p className="text-lg text-blue-800 leading-relaxed">
+            <p className="text-base md:text-lg text-blue-800 leading-relaxed">
               {card.data.definition_en}
             </p>
           </div>
 
           {showTranslation && card.data.definition_tr && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h4 className="text-sm font-semibold text-green-800 mb-3">Turkish Meaning</h4>
-              <p className="text-green-700 text-lg leading-relaxed">{card.data.definition_tr}</p>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="text-xs font-semibold text-green-800 mb-2">Turkish Meaning</h4>
+              <p className="text-green-700 text-sm md:text-base leading-relaxed">{card.data.definition_tr}</p>
             </div>
           )}
         </div>
 
         {/* Example Sentence */}
         {card.data.example_sentence && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <h4 className="text-sm font-semibold text-gray-800 mb-3">Example Sentence</h4>
-            <p className="text-gray-700 text-lg italic leading-relaxed">"{card.data.example_sentence}"</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <h4 className="text-xs font-semibold text-gray-800 mb-2">Example Sentence</h4>
+            <p className="text-gray-700 text-sm md:text-base italic leading-relaxed">"{card.data.example_sentence}"</p>
           </div>
         )}
       </div>
 
       {/* Navigation */}
-      <div className="p-6 border-t border-gray-200">
-        <div className="flex space-x-4">
+      <div className="p-3 md:p-4 border-t border-gray-200">
+        {/* Mobile Swipe Hint */}
+        <div className="md:hidden text-center mb-3">
+          <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
+            <span>←</span>
+            <span>Swipe to navigate</span>
+            <span>→</span>
+          </p>
+        </div>
+        
+        {/* Desktop Navigation Buttons */}
+        <div className="hidden md:flex space-x-3">
           <button
             onClick={handlePrevious}
-            className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
+            className="flex-1 flex items-center justify-center space-x-1 py-2 px-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             <span>Previous</span>
           </button>
           <button
             onClick={handleNext}
-            className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 font-medium"
+            className="flex-1 flex items-center justify-center space-x-1 py-2 px-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 text-sm font-medium"
           >
             <span>Next</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
