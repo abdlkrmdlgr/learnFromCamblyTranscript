@@ -225,39 +225,42 @@ const TranscriptDetail = () => {
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-4xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+          <div className="max-w-4xl mx-auto px-4 py-3 md:py-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
+              <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
                 <button
                   onClick={backToTranscript}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors self-start"
                 >
                   <ArrowLeft size={20} />
                   <span>Back</span>
                 </button>
-                <div className="h-6 w-px bg-gray-300"></div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  {activeSection === 'grammar' && 'Grammar Practice'}
-                  {activeSection === 'vocabulary' && 'Vocabulary Practice'}
-                  {activeSection === 'quiz' && 'Quiz Practice'}
-                </h1>
-                <div className="text-sm text-gray-500">
-                  {currentCardIndex + 1} / {sessionCards.length}
+                <div className="hidden md:block h-6 w-px bg-gray-300"></div>
+                <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-4">
+                  <h1 className="text-lg md:text-xl font-semibold text-gray-900">
+                    {activeSection === 'grammar' && 'Grammar Practice'}
+                    {activeSection === 'vocabulary' && 'Vocabulary Practice'}
+                    {activeSection === 'quiz' && 'Quiz Practice'}
+                  </h1>
+                  <div className="text-sm text-gray-500">
+                    {currentCardIndex + 1} / {sessionCards.length}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                 <button
                   onClick={() => startSectionSession(activeSection, false)}
-                  className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center space-x-2 px-3 py-2 text-xs md:text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <span>Restart</span>
                 </button>
                 {transcriptProgress[activeSection] && !transcriptProgress[activeSection].completed && (
                   <button
                     onClick={() => startSectionSession(activeSection, true)}
-                    className="flex items-center space-x-2 px-4 py-2 text-sm text-blue-600 hover:text-blue-900 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                    className="flex items-center space-x-2 px-3 py-2 text-xs md:text-sm text-blue-600 hover:text-blue-900 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
                   >
-                    <span>Resume from {transcriptProgress[activeSection].currentIndex + 1}</span>
+                    <span className="hidden sm:inline">Resume from {transcriptProgress[activeSection].currentIndex + 1}</span>
+                    <span className="sm:hidden">Resume</span>
                   </button>
                 )}
               </div>
@@ -312,20 +315,21 @@ const TranscriptDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 mb-6 md:mb-8">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between">
+            <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
               <button
                 onClick={() => navigate('')}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors self-start"
               >
                 <ArrowLeft size={20} />
-                <span>Back to Home</span>
+                <span className="hidden sm:inline">Back to Home</span>
+                <span className="sm:hidden">Back</span>
               </button>
-              <div className="h-6 w-px bg-gray-300"></div>
+              <div className="hidden md:block h-6 w-px bg-gray-300"></div>
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">{transcript.title}</h1>
-                <div className="flex items-center space-x-6 text-sm text-gray-600">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 md:mb-4 leading-tight">{transcript.title}</h1>
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-gray-600">
                   <div className="flex items-center space-x-2">
                     <Calendar size={16} />
                     <span>{transcript.date}</span>
@@ -341,30 +345,30 @@ const TranscriptDetail = () => {
         </div>
 
         {/* Learning Sections */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
           {/* Grammar Section */}
-          <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow relative">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 hover:shadow-xl transition-shadow relative">
             {transcriptProgress.grammar && (
               <div className="absolute top-4 right-4 bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
                 {transcriptProgress.grammar.completed ? 'Completed' : `${transcriptProgress.grammar.currentIndex + 1}/${transcriptProgress.grammar.totalCards} completed`}
               </div>
             )}
             <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FileText size={32} className="text-red-600" />
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                <FileText size={24} className="text-red-600 md:w-8 md:h-8" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Grammar</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">Grammar</h2>
+              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
                 Practice grammar corrections and improve your sentence structure
               </p>
-              <div className="text-3xl font-bold text-red-600 mb-2">
+              <div className="text-2xl md:text-3xl font-bold text-red-600 mb-3 md:mb-2">
                 {transcript.grammar_mistakes?.length || 0}
               </div>
               <div className="space-y-2">
                 <button
                   onClick={() => startSectionSession('grammar')}
                   disabled={(transcript.grammar_mistakes?.length || 0) === 0}
-                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base py-2 md:py-3"
                 >
                   {transcriptProgress.grammar?.completed ? 'Review Grammar' : 'Start Grammar Practice'}
                 </button>
@@ -373,28 +377,28 @@ const TranscriptDetail = () => {
           </div>
 
           {/* Vocabulary Section */}
-          <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow relative">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 hover:shadow-xl transition-shadow relative">
             {transcriptProgress.vocabulary && (
               <div className="absolute top-4 right-4 bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
                 {transcriptProgress.vocabulary.completed ? 'Completed' : `${transcriptProgress.vocabulary.currentIndex + 1}/${transcriptProgress.vocabulary.totalCards} completed`}
               </div>
             )}
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <BookOpenCheck size={32} className="text-blue-600" />
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                <BookOpenCheck size={24} className="text-blue-600 md:w-8 md:h-8" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Vocabulary</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">Vocabulary</h2>
+              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
                 Learn new words and expand your vocabulary
               </p>
-              <div className="text-3xl font-bold text-blue-600 mb-2">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-3 md:mb-2">
                 {transcript.vocabulary_suggestions?.length || 0}
               </div>
               <div className="space-y-2">
                 <button
                   onClick={() => startSectionSession('vocabulary')}
                   disabled={(transcript.vocabulary_suggestions?.length || 0) === 0}
-                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base py-2 md:py-3"
                 >
                   {transcriptProgress.vocabulary?.completed ? 'Review Vocabulary' : 'Start Vocabulary Practice'}
                 </button>
@@ -403,28 +407,28 @@ const TranscriptDetail = () => {
           </div>
 
           {/* Quiz Section */}
-          <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow relative">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 hover:shadow-xl transition-shadow relative">
             {transcriptProgress.quiz && (
               <div className="absolute top-4 right-4 bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
                 {transcriptProgress.quiz.completed ? 'Completed' : `${transcriptProgress.quiz.currentIndex + 1}/${transcriptProgress.quiz.totalCards} completed`}
               </div>
             )}
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <HelpCircle size={32} className="text-green-600" />
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                <HelpCircle size={24} className="text-green-600 md:w-8 md:h-8" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Quiz</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">Quiz</h2>
+              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
                 Test your knowledge with interactive quizzes
               </p>
-              <div className="text-3xl font-bold text-green-600 mb-2">
+              <div className="text-2xl md:text-3xl font-bold text-green-600 mb-3 md:mb-2">
                 {transcript.quizzes?.length || 0}
               </div>
               <div className="space-y-2">
                 <button
                   onClick={() => startSectionSession('quiz')}
                   disabled={(transcript.quizzes?.length || 0) === 0}
-                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base py-2 md:py-3"
                 >
                   {transcriptProgress.quiz?.completed ? 'Review Quiz' : 'Start Quiz Practice'}
                 </button>
