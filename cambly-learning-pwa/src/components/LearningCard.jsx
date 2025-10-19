@@ -38,6 +38,23 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
     }
   };
 
+  // Touch handlers for tap gestures
+  const handleTap = (e) => {
+    if (!cardRef.current) return;
+    
+    const rect = cardRef.current.getBoundingClientRect();
+    const cardWidth = rect.width;
+    const touchX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+    const relativeX = touchX - rect.left;
+    
+    // Check if touch is in left or right half
+    if (relativeX < cardWidth / 2) {
+      handlePrevious();
+    } else {
+      handleNext();
+    }
+  };
+
   const renderGrammarCard = () => (
     <div 
       ref={cardRef}
@@ -45,6 +62,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onClick={handleTap}
     >
       {/* Content */}
       <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-4">
@@ -125,6 +143,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onClick={handleTap}
     >
       {/* Content */}
       <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-4">
