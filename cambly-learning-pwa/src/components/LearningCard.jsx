@@ -1,14 +1,19 @@
-import { useState, useRef } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const LearningCard = ({ card, onComplete, showTurkish = false }) => {
-  const [showTranslation, setShowTranslation] = useState(showTurkish);
+  const [showTurkishMeaning, setShowTurkishMeaning] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const cardRef = useRef(null);
 
-  const handleToggleTranslation = () => {
-    setShowTranslation(!showTranslation);
+  // Reset Turkish meaning visibility when card changes
+  useEffect(() => {
+    setShowTurkishMeaning(false);
+  }, [card]);
+
+  const handleToggleTurkishMeaning = () => {
+    setShowTurkishMeaning(!showTurkishMeaning);
   };
 
   const handleNext = () => {
@@ -47,25 +52,14 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
   const renderGrammarCard = () => (
     <div 
       ref={cardRef}
-      className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[400px] flex flex-col"
+      className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[350px] flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Content */}
-      <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-6">
-        {/* Translation Toggle */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={handleToggleTranslation}
-            className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
-          >
-            {showTranslation ? <EyeOff size={14} /> : <Eye size={14} />}
-            <span>{showTranslation ? 'Hide' : 'Show'} Translation</span>
-          </button>
-        </div>
-
-        <div className="text-center space-y-3">
+      <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-4">
+        <div className="text-center space-y-2">
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <h3 className="text-xs font-medium text-gray-600 mb-2">Original Sentence</h3>
             <p className="text-base md:text-lg text-gray-900 font-medium leading-relaxed">
@@ -82,14 +76,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
         </div>
 
         {/* Explanations */}
-        <div className="space-y-3">
-          {showTranslation && card.data.explanation_tr && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <h4 className="text-xs font-semibold text-blue-800 mb-1">Turkish Explanation</h4>
-              <p className="text-sm text-blue-700 leading-relaxed">{card.data.explanation_tr}</p>
-            </div>
-          )}
-
+        <div className="space-y-2">
           {card.data.explanation_en && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
               <h4 className="text-xs font-semibold text-gray-800 mb-1">English Explanation</h4>
@@ -99,10 +86,30 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
         </div>
       </div>
 
+      {/* Turkish Meaning - Collapsible */}
+      {card.data.explanation_tr && (
+        <div className="border-t border-gray-200">
+          <button
+            onClick={handleToggleTurkishMeaning}
+            className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+          >
+            <span className="text-sm font-medium text-gray-700">Turkish Explanation</span>
+            {showTurkishMeaning ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          {showTurkishMeaning && (
+            <div className="px-3 pb-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-700 leading-relaxed">{card.data.explanation_tr}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Navigation */}
       <div className="p-3 md:p-4 border-t border-gray-200">
         {/* Mobile Swipe Hint */}
-        <div className="md:hidden text-center mb-3">
+        <div className="md:hidden text-center mb-2">
           <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
             <span>←</span>
             <span>Swipe to navigate</span>
@@ -138,26 +145,15 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
   const renderVocabularyCard = () => (
     <div 
       ref={cardRef}
-      className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[400px] flex flex-col"
+      className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[350px] flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Content */}
-      <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-6">
-        {/* Translation Toggle */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={handleToggleTranslation}
-            className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
-          >
-            {showTranslation ? <EyeOff size={14} /> : <Eye size={14} />}
-            <span>{showTranslation ? 'Hide' : 'Show'} Translation</span>
-          </button>
-        </div>
-
+      <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-4">
         {/* Word and Definition */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3">
           <div className="bg-blue-50 rounded-lg p-4 md:p-6 border border-blue-200">
             <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-3">
               {card.data.word}
@@ -167,12 +163,6 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
             </p>
           </div>
 
-          {showTranslation && card.data.definition_tr && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h4 className="text-xs font-semibold text-green-800 mb-2">Turkish Meaning</h4>
-              <p className="text-green-700 text-sm md:text-base leading-relaxed">{card.data.definition_tr}</p>
-            </div>
-          )}
         </div>
 
         {/* Example Sentence */}
@@ -184,10 +174,30 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
         )}
       </div>
 
+      {/* Turkish Meaning - Collapsible */}
+      {card.data.definition_tr && (
+        <div className="border-t border-gray-200">
+          <button
+            onClick={handleToggleTurkishMeaning}
+            className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+          >
+            <span className="text-sm font-medium text-gray-700">Turkish Meaning</span>
+            {showTurkishMeaning ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          {showTurkishMeaning && (
+            <div className="px-3 pb-3">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-700 leading-relaxed">{card.data.definition_tr}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Navigation */}
       <div className="p-3 md:p-4 border-t border-gray-200">
         {/* Mobile Swipe Hint */}
-        <div className="md:hidden text-center mb-3">
+        <div className="md:hidden text-center mb-2">
           <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
             <span>←</span>
             <span>Swipe to navigate</span>

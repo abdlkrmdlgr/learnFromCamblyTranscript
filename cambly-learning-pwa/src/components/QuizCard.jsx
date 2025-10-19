@@ -115,9 +115,8 @@ const QuizCard = ({ card, onComplete, showTurkish = false }) => {
               : 'bg-red-50 text-red-800 border border-red-200'
           }`}>
             {isCorrect ? (
-              <div className="flex items-center justify-center space-x-2">
+              <div className="flex items-center justify-center">
                 <CheckCircle size={24} />
-                <span className="font-semibold text-lg">Correct! Well done!</span>
               </div>
             ) : (
               <div className="flex items-center justify-center space-x-2">

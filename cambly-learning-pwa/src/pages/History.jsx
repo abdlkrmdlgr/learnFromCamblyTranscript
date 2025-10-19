@@ -3,11 +3,14 @@ import { Calendar, BookOpen, Trash2, ArrowLeft, FileText, Brain, Target } from '
 import { useTranscripts } from '../hooks/useTranscripts';
 import LearningCard from '../components/LearningCard';
 import QuizCard from '../components/QuizCard';
+import ConfirmModal from '../components/ConfirmModal';
 
 const History = () => {
   const [selectedTranscript, setSelectedTranscript] = useState(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showCards, setShowCards] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [transcriptToDelete, setTranscriptToDelete] = useState(null);
   
   const { transcripts, deleteTranscript, getTranscriptById } = useTranscripts();
 
@@ -100,9 +103,21 @@ const History = () => {
   };
 
   const handleDeleteTranscript = (id) => {
-    if (window.confirm('Bu transkripti silmek istediğinizden emin misiniz?')) {
-      deleteTranscript(id);
+    setTranscriptToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (transcriptToDelete) {
+      deleteTranscript(transcriptToDelete);
+      setShowDeleteModal(false);
+      setTranscriptToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setTranscriptToDelete(null);
   };
 
   const renderTranscriptList = () => (
@@ -250,10 +265,42 @@ const History = () => {
   };
 
   if (showCards && selectedTranscript) {
-    return renderCardReview();
+    return (
+      <>
+        {renderCardReview()}
+        
+        {/* Delete Confirmation Modal */}
+        <ConfirmModal
+          isOpen={showDeleteModal}
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          title="Transkripti Sil"
+          message="Bu transkripti silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+          confirmText="Sil"
+          cancelText="İptal"
+          type="danger"
+        />
+      </>
+    );
   }
 
-  return renderTranscriptList();
+  return (
+    <>
+      {renderTranscriptList()}
+      
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Transkripti Sil"
+        message="Bu transkripti silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        confirmText="Sil"
+        cancelText="İptal"
+        type="danger"
+      />
+    </>
+  );
 };
 
 export default History;

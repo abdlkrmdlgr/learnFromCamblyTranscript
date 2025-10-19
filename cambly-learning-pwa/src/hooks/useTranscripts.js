@@ -23,8 +23,15 @@ export const useTranscripts = () => {
 
   const addTranscript = (transcriptData) => {
     try {
+      console.log('useTranscripts addTranscript called with:', transcriptData);
       const newTranscript = transcriptStorage.add(transcriptData);
-      setTranscripts(prev => [...prev, newTranscript]);
+      console.log('Storage returned transcript:', newTranscript);
+      setTranscripts(prev => {
+        console.log('Previous transcripts:', prev);
+        const updated = [...prev, newTranscript];
+        console.log('Updated transcripts:', updated);
+        return updated;
+      });
       return newTranscript;
     } catch (error) {
       console.error('Transcript eklenemedi:', error);

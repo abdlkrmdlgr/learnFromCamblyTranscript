@@ -23,7 +23,25 @@ export const transcriptStorage = {
   // Yeni transcript ekle
   add: (transcript) => {
     try {
+      console.log('Storage add called with:', transcript);
       const transcripts = transcriptStorage.getAll();
+      console.log('Current transcripts in storage:', transcripts);
+      
+      // Duplicate kontrolü - aynı tarihli transcript var mı?
+      const existingTranscript = transcripts.find(t => t.date === transcript.date);
+      if (existingTranscript) {
+        console.log('Duplicate transcript found, updating existing one:', existingTranscript);
+        // Mevcut transcript'i güncelle
+        existingTranscript.title = transcript.title || existingTranscript.title;
+        existingTranscript.grammar_mistakes = transcript.grammar_mistakes || existingTranscript.grammar_mistakes;
+        existingTranscript.vocabulary_suggestions = transcript.vocabulary_suggestions || existingTranscript.vocabulary_suggestions;
+        existingTranscript.quizzes = transcript.quizzes || existingTranscript.quizzes;
+        existingTranscript.updatedAt = new Date().toISOString();
+        
+        localStorage.setItem(STORAGE_KEYS.TRANSCRIPTS, JSON.stringify(transcripts));
+        return existingTranscript;
+      }
+      
       const newTranscript = {
         id: crypto.randomUUID(),
         title: transcript.title || `Transcript ${new Date().toLocaleDateString()}`,
@@ -34,7 +52,9 @@ export const transcriptStorage = {
         createdAt: new Date().toISOString()
       };
       
+      console.log('New transcript created:', newTranscript);
       transcripts.push(newTranscript);
+      console.log('Updated transcripts array:', transcripts);
       localStorage.setItem(STORAGE_KEYS.TRANSCRIPTS, JSON.stringify(transcripts));
       return newTranscript;
     } catch (error) {
