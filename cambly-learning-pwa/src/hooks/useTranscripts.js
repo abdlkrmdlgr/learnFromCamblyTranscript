@@ -12,7 +12,7 @@ export const useTranscripts = () => {
         const savedTranscripts = transcriptStorage.getAll();
         setTranscripts(savedTranscripts);
       } catch (error) {
-        console.error('Transcript verileri yüklenemedi:', error);
+        console.error('Transcript data could not be loaded:', error);
       } finally {
         setIsLoading(false);
       }

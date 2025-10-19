@@ -88,9 +88,9 @@ const TranscriptDetail = () => {
   };
 
   const handleCardComplete = (action) => {
-    // QuizCard'dan gelen boolean değeri (isCorrect) veya string action'ı işle
+    // Handle boolean value (isCorrect) or string action from QuizCard
     if (typeof action === 'boolean') {
-      // QuizCard'dan gelen isCorrect değeri
+      // isCorrect value from QuizCard
       if (currentCardIndex < sessionCards.length - 1) {
         const newIndex = currentCardIndex + 1;
         setCurrentCardIndex(newIndex);
@@ -111,7 +111,7 @@ const TranscriptDetail = () => {
         completeSession();
       }
     } else if (action === 'next') {
-      // LearningCard'dan gelen next action'ı
+      // next action from LearningCard
       if (currentCardIndex < sessionCards.length - 1) {
         const newIndex = currentCardIndex + 1;
         setCurrentCardIndex(newIndex);
@@ -218,6 +218,19 @@ const TranscriptDetail = () => {
             >
               Back to Transcript
             </button>
+            {activeSection === 'quiz' && (
+              <button
+                onClick={() => {
+                  setSessionComplete(false);
+                  setIsSessionActive(true);
+                  setCurrentCardIndex(0);
+                  setSessionStats({ completed: 0, correct: 0, total: sessionCards.length });
+                }}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Retake Quiz
+              </button>
+            )}
           </div>
         </div>
       </div>

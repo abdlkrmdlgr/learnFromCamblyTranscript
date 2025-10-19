@@ -6,7 +6,7 @@ const QuizCard = ({ card, onComplete, showTurkish = false }) => {
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
 
-  // Her yeni kart geldiğinde state'leri sıfırla
+  // Reset states when new card arrives
   useEffect(() => {
     setSelectedAnswer(null);
     setShowResult(false);
@@ -67,7 +67,7 @@ const QuizCard = ({ card, onComplete, showTurkish = false }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[500px] flex flex-col">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[500px] w-full max-w-2xl mx-auto flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
@@ -106,26 +106,6 @@ const QuizCard = ({ card, onComplete, showTurkish = false }) => {
             </button>
           ))}
         </div>
-
-        {/* Result */}
-        {showResult && (
-          <div className={`text-center p-6 rounded-lg ${
-            isCorrect 
-              ? 'bg-green-50 text-green-800 border border-green-200' 
-              : 'bg-red-50 text-red-800 border border-red-200'
-          }`}>
-            {isCorrect ? (
-              <div className="flex items-center justify-center">
-                <CheckCircle size={24} />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center space-x-2">
-                <XCircle size={24} />
-                <span className="font-semibold text-lg">Incorrect. Correct answer: {card.data.options[card.data.correct_answer]}</span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Navigation */}

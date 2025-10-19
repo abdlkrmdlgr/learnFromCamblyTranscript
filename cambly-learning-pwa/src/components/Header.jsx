@@ -28,7 +28,7 @@ const Header = ({ onImportClick }) => {
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
               <BookOpen size={20} className="text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">CamblyLearn</span>
+            <span className="text-xl font-bold text-gray-900">CamblyXL</span>
           </Link>
 
           {/* Navigation */}
@@ -94,7 +94,7 @@ const Header = ({ onImportClick }) => {
                 <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                   <BookOpen size={20} className="text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900">CamblyLearn</span>
+                <span className="text-xl font-bold text-gray-900">CamblyXL</span>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}

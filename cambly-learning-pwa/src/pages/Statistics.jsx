@@ -55,7 +55,7 @@ const Statistics = () => {
       const session = recentSessions.find(s => s.date === dateStr);
       last7Days.push({
         date: dateStr,
-        dayName: date.toLocaleDateString('tr-TR', { weekday: 'short' }),
+        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
         cardsStudied: session?.cardsStudied || 0,
         quizScore: session?.quizScore || 0
       });
@@ -71,19 +71,19 @@ const Statistics = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">İstatistikler</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Statistics</h1>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <BarChart3 size={20} />
-            <span>Öğrenme Analizi</span>
+            <span>Learning Analytics</span>
           </div>
         </div>
 
-        {/* Genel İstatistikler */}
+        {/* General Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Toplam Gün</p>
+                <p className="text-sm font-medium text-gray-600">Total Days</p>
                 <p className="text-2xl font-bold text-gray-900">{dailyStats?.totalDays || 0}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -107,7 +107,7 @@ const Statistics = () => {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Toplam Kart</p>
+                <p className="text-sm font-medium text-gray-600">Total Cards</p>
                 <p className="text-2xl font-bold text-gray-900">{dailyStats?.totalCards || 0}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -119,7 +119,7 @@ const Statistics = () => {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Ortalama Skor</p>
+                <p className="text-sm font-medium text-gray-600">Average Score</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {Math.round((dailyStats?.avgQuizScore || 0) * 100)}%
                 </p>
@@ -131,15 +131,15 @@ const Statistics = () => {
           </div>
         </div>
 
-        {/* İçerik Dağılımı */}
+        {/* Content Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">İçerik Dağılımı</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Content Distribution</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">Grammar Hataları</span>
+                  <span className="text-sm font-medium text-gray-700">Grammar Mistakes</span>
                 </div>
                 <span className="text-lg font-bold text-gray-900">{totalStats.totalGrammar}</span>
               </div>
@@ -155,23 +155,23 @@ const Statistics = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">Quiz Soruları</span>
+                  <span className="text-sm font-medium text-gray-700">Quiz Questions</span>
                 </div>
                 <span className="text-lg font-bold text-gray-900">{totalStats.totalQuizzes}</span>
               </div>
               
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Toplam</span>
+                  <span className="text-sm font-medium text-gray-700">Total</span>
                   <span className="text-lg font-bold text-primary-600">{totalStats.totalItems}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Haftalık Aktivite */}
+          {/* Weekly Activity */}
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Son 7 Gün</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Last 7 Days</h3>
             <div className="space-y-3">
               {weeklyActivity.map((day, index) => (
                 <div key={day.date} className="flex items-center justify-between">
@@ -189,7 +189,7 @@ const Statistics = () => {
                     </div>
                   </div>
                   <div className="text-sm text-gray-600 ml-3">
-                    {day.cardsStudied} kart
+                    {day.cardsStudied} card{day.cardsStudied !== 1 ? 's' : ''}
                   </div>
                 </div>
               ))}
@@ -197,13 +197,13 @@ const Statistics = () => {
           </div>
         </div>
 
-        {/* Son Oturumlar */}
+        {/* Recent Sessions */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Oturumlar</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Sessions</h3>
           {recentSessions.length === 0 ? (
             <div className="text-center py-8">
               <BookOpen size={48} className="text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Henüz oturum yok</p>
+              <p className="text-gray-600">No sessions yet</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -215,15 +215,15 @@ const Statistics = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        {new Date(session.date).toLocaleDateString('tr-TR')}
+                        {new Date(session.date).toLocaleDateString('en-US')}
                       </p>
                       <p className="text-xs text-gray-600">
-                        {session.cardsStudied} kart • {Math.round(session.quizScore * 100)}% doğruluk
+                        {session.cardsStudied} card{session.cardsStudied !== 1 ? 's' : ''} • {Math.round(session.quizScore * 100)}% accuracy
                       </p>
                     </div>
                   </div>
                   <div className="text-sm text-gray-600">
-                    {new Date(session.completedAt).toLocaleTimeString('tr-TR', {
+                    {new Date(session.completedAt).toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}

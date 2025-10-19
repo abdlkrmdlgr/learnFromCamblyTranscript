@@ -49,7 +49,7 @@ const Home = ({ showImportModal, setShowImportModal }) => {
         setCurrentCardIndex(prev => prev + 1);
       }, 1500);
     } else {
-      // Session tamamlandı
+      // Session completed
       setTimeout(() => {
         completeSession();
       }, 1500);
@@ -194,6 +194,19 @@ const Home = ({ showImportModal, setShowImportModal }) => {
           >
             Back to Dashboard
           </button>
+          {activeSection === 'quiz' && (
+            <button
+              onClick={() => {
+                setSessionComplete(false);
+                setIsSessionActive(true);
+                setCurrentCardIndex(0);
+                setSessionStats({ completed: 0, correct: 0, total: sessionCards.length });
+              }}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+            >
+              Retake Quiz
+            </button>
+          )}
           <button
             onClick={() => setShowImportModal(true)}
             className="w-full btn-secondary"

@@ -16,7 +16,7 @@ const History = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', {
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -95,7 +95,7 @@ const History = () => {
     if (currentCardIndex < allCards.length - 1) {
       setCurrentCardIndex(prev => prev + 1);
     } else {
-      // Review tamamlandı
+      // Review completed
       setShowCards(false);
       setSelectedTranscript(null);
       setCurrentCardIndex(0);
@@ -124,17 +124,17 @@ const History = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Geçmiş Transkriptler</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Transcript History</h1>
           <div className="text-sm text-gray-600">
-            {transcripts.length} transkript
+            {transcripts.length} transcript{transcripts.length !== 1 ? 's' : ''}
           </div>
         </div>
 
         {transcripts.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen size={48} className="text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz transkript yok</h3>
-            <p className="text-gray-600">İlk JSON dosyanızı yükleyerek başlayın.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No transcripts yet</h3>
+            <p className="text-gray-600">Start by uploading your first JSON file.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -174,7 +174,7 @@ const History = () => {
                           onClick={() => startReview(transcript)}
                           className="btn-primary"
                         >
-                          Tekrar Et
+                          Review
                         </button>
                         <button
                           onClick={() => handleDeleteTranscript(transcript.id)}
@@ -216,7 +216,7 @@ const History = () => {
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 <ArrowLeft size={20} />
-                <span>Geri</span>
+                <span>Back</span>
               </button>
               <div className="text-center">
                 <h2 className="text-lg font-semibold text-gray-900">
@@ -274,10 +274,10 @@ const History = () => {
           isOpen={showDeleteModal}
           onClose={cancelDelete}
           onConfirm={confirmDelete}
-          title="Transkripti Sil"
-          message="Bu transkripti silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-          confirmText="Sil"
-          cancelText="İptal"
+          title="Delete Transcript"
+          message="Are you sure you want to delete this transcript? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
           type="danger"
         />
       </>
@@ -293,10 +293,10 @@ const History = () => {
         isOpen={showDeleteModal}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-        title="Transkripti Sil"
-        message="Bu transkripti silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-        confirmText="Sil"
-        cancelText="İptal"
+        title="Delete Transcript"
+        message="Are you sure you want to delete this transcript? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
         type="danger"
       />
     </>

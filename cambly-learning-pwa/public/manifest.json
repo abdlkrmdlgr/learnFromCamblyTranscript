@@ -1,6 +1,6 @@
 {
   "name": "Cambly Learning PWA",
-  "short_name": "CamblyLearn",
+  "short_name": "CamblyXL",
   "description": "Cambly konuşmalarından öğrenme uygulaması",
   "start_url": "/",
   "display": "standalone",

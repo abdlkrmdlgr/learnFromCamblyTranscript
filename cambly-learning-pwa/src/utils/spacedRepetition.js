@@ -1,4 +1,4 @@
-// Aralıklı tekrar algoritması
+// Spaced repetition algorithm
 
 export const getSpacedRepetitionCards = (transcripts, currentDate = new Date()) => {
   if (!transcripts || transcripts.length === 0) return [];
@@ -7,43 +7,43 @@ export const getSpacedRepetitionCards = (transcripts, currentDate = new Date()) 
   const threeDaysAgo = new Date(currentDate.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const sevenDaysAgo = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  // Transcriptleri tarihe göre kategorize et
+  // Categorize transcripts by date
   const todayTranscripts = transcripts.filter(t => t.date === today);
   const recentTranscripts = transcripts.filter(t => t.date > threeDaysAgo && t.date < today);
   const weekTranscripts = transcripts.filter(t => t.date > sevenDaysAgo && t.date <= threeDaysAgo);
   const oldTranscripts = transcripts.filter(t => t.date <= sevenDaysAgo);
 
-  // Kartları oluştur
+  // Create cards
   const cards = [];
 
-  // Bugünün materyali (%40)
+  // Today's material (40%)
   todayTranscripts.forEach(transcript => {
     cards.push(...createCardsFromTranscript(transcript, 0.4));
   });
 
-  // Son 3 gün (%30)
+  // Last 3 days (30%)
   recentTranscripts.forEach(transcript => {
     cards.push(...createCardsFromTranscript(transcript, 0.3));
   });
 
-  // Son 7 gün (%20)
+  // Last 7 days (20%)
   weekTranscripts.forEach(transcript => {
     cards.push(...createCardsFromTranscript(transcript, 0.2));
   });
 
-  // 7+ gün önce (%10)
+  // 7+ days ago (10%)
   oldTranscripts.forEach(transcript => {
     cards.push(...createCardsFromTranscript(transcript, 0.1));
   });
 
-  // Kartları karıştır
+  // Shuffle cards
   return shuffleArray(cards);
 };
 
 const createCardsFromTranscript = (transcript, weight) => {
   const cards = [];
 
-  // Grammar mistakes kartları
+  // Grammar mistakes cards
   transcript.grammar_mistakes?.forEach(mistake => {
     cards.push({
       id: `${transcript.id}-grammar-${mistake.original}`,
@@ -55,7 +55,7 @@ const createCardsFromTranscript = (transcript, weight) => {
     });
   });
 
-  // Vocabulary kartları
+  // Vocabulary cards
   transcript.vocabulary_suggestions?.forEach(vocab => {
     cards.push({
       id: `${transcript.id}-vocab-${vocab.word}`,
@@ -67,7 +67,7 @@ const createCardsFromTranscript = (transcript, weight) => {
     });
   });
 
-  // Quiz kartları
+  // Quiz cards
   transcript.quizzes?.forEach(quiz => {
     cards.push({
       id: `${transcript.id}-quiz-${quiz.question_en}`,
@@ -91,11 +91,11 @@ const shuffleArray = (array) => {
   return shuffled;
 };
 
-// Kartları ağırlıklarına göre seç
+// Select cards by weight
 export const selectCardsForSession = (cards, maxCards = 20) => {
   if (cards.length <= maxCards) return cards;
 
-  // Ağırlıklı seçim yap
+  // Make weighted selection
   const weightedCards = [];
   cards.forEach(card => {
     const count = Math.ceil(card.weight * maxCards);
@@ -104,12 +104,12 @@ export const selectCardsForSession = (cards, maxCards = 20) => {
     }
   });
 
-  // Rastgele seç ve sınırla
+  // Randomly select and limit
   const shuffled = shuffleArray(weightedCards);
   return shuffled.slice(0, maxCards);
 };
 
-// Günlük kart dağılımını hesapla
+// Calculate daily card distribution
 export const calculateDailyDistribution = (transcripts) => {
   const today = new Date().toISOString().split('T')[0];
   const cards = getSpacedRepetitionCards(transcripts);

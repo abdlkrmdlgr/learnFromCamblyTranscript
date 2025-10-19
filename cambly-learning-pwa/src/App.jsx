@@ -18,11 +18,11 @@ function AppContent() {
   };
 
   const handleImport = (transcript) => {
-    // Import işlemi tamamlandıktan sonra modal'ı kapat
+    // Close modal after import is completed
     setShowImportModal(false);
-    // Home sayfasını force refresh et
+    // Force refresh home page
     setHomeKey(prev => prev + 1);
-    // Home sayfasına yönlendir
+    // Navigate to home page
     navigate('/');
   };
 

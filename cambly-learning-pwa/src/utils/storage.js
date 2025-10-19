@@ -1,4 +1,4 @@
-// LocalStorage yönetimi için utility fonksiyonları
+// Utility functions for LocalStorage management
 
 const STORAGE_KEYS = {
   TRANSCRIPTS: 'cambly_transcripts',
@@ -7,31 +7,31 @@ const STORAGE_KEYS = {
   SESSION_PROGRESS: 'cambly_session_progress'
 };
 
-// Transcript verilerini yönetme
+// Manage transcript data
 export const transcriptStorage = {
-  // Tüm transcriptleri getir
+  // Get all transcripts
   getAll: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TRANSCRIPTS);
       return data ? JSON.parse(data) : [];
     } catch (error) {
-      console.error('Transcript verileri okunamadı:', error);
+      console.error('Transcript data could not be read:', error);
       return [];
     }
   },
 
-  // Yeni transcript ekle
+  // Add new transcript
   add: (transcript) => {
     try {
       console.log('Storage add called with:', transcript);
       const transcripts = transcriptStorage.getAll();
       console.log('Current transcripts in storage:', transcripts);
       
-      // Duplicate kontrolü - aynı tarihli transcript var mı?
+      // Duplicate check - is there a transcript with the same date?
       const existingTranscript = transcripts.find(t => t.date === transcript.date);
       if (existingTranscript) {
         console.log('Duplicate transcript found, updating existing one:', existingTranscript);
-        // Mevcut transcript'i güncelle
+        // Update existing transcript
         existingTranscript.title = transcript.title || existingTranscript.title;
         existingTranscript.grammar_mistakes = transcript.grammar_mistakes || existingTranscript.grammar_mistakes;
         existingTranscript.vocabulary_suggestions = transcript.vocabulary_suggestions || existingTranscript.vocabulary_suggestions;
@@ -63,13 +63,13 @@ export const transcriptStorage = {
     }
   },
 
-  // ID'ye göre transcript getir
+  // Get transcript by ID
   getById: (id) => {
     const transcripts = transcriptStorage.getAll();
     return transcripts.find(t => t.id === id);
   },
 
-  // Tarihe göre transcript getir
+  // Get transcript by date
   getByDate: (date) => {
     const transcripts = transcriptStorage.getAll();
     return transcripts.find(t => t.date === date);
@@ -88,7 +88,7 @@ export const transcriptStorage = {
     }
   },
 
-  // Tüm transcriptleri sil
+  // Delete all transcripts
   clearAll: () => {
     try {
       localStorage.removeItem(STORAGE_KEYS.TRANSCRIPTS);
@@ -100,20 +100,20 @@ export const transcriptStorage = {
   }
 };
 
-// Ayarları yönetme
+// Manage settings
 export const settingsStorage = {
-  // Ayarları getir
+  // Get settings
   get: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       return data ? JSON.parse(data) : { showTurkish: false };
     } catch (error) {
-      console.error('Ayarlar okunamadı:', error);
+      console.error('Settings could not be read:', error);
       return { showTurkish: false };
     }
   },
 
-  // Ayarları güncelle
+  // Update settings
   update: (newSettings) => {
     try {
       const currentSettings = settingsStorage.get();
@@ -121,13 +121,13 @@ export const settingsStorage = {
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updatedSettings));
       return updatedSettings;
     } catch (error) {
-      console.error('Ayarlar güncellenemedi:', error);
+      console.error('Settings could not be updated:', error);
       throw error;
     }
   }
 };
 
-// İlerleme verilerini yönetme
+// Manage progress data
 export const progressStorage = {
   // İlerleme verilerini getir
   get: () => {
@@ -135,12 +135,12 @@ export const progressStorage = {
       const data = localStorage.getItem(STORAGE_KEYS.PROGRESS);
       return data ? JSON.parse(data) : { studySessions: [] };
     } catch (error) {
-      console.error('İlerleme verileri okunamadı:', error);
+      console.error('Progress data could not be read:', error);
       return { studySessions: [] };
     }
   },
 
-  // Çalışma oturumu ekle
+  // Add study session
   addSession: (sessionData) => {
     try {
       const progress = progressStorage.get();
@@ -155,12 +155,12 @@ export const progressStorage = {
       localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress));
       return newSession;
     } catch (error) {
-      console.error('Çalışma oturumu eklenemedi:', error);
+      console.error('Study session could not be added:', error);
       throw error;
     }
   },
 
-  // Günlük istatistikleri getir
+  // Get daily statistics
   getDailyStats: () => {
     const progress = progressStorage.get();
     const sessions = progress.studySessions;
@@ -178,7 +178,7 @@ export const progressStorage = {
     };
   },
 
-  // Tüm verileri temizle
+  // Clear all data
   clearAll: () => {
     try {
       localStorage.removeItem(STORAGE_KEYS.TRANSCRIPTS);
@@ -187,7 +187,7 @@ export const progressStorage = {
       localStorage.removeItem(STORAGE_KEYS.SESSION_PROGRESS);
       return true;
     } catch (error) {
-      console.error('Tüm veriler temizlenemedi:', error);
+      console.error('All data could not be cleared:', error);
       return false;
     }
   }
@@ -225,23 +225,23 @@ export const sessionProgressStorage = {
       const key = `${transcriptId}-${sectionType}`;
       return progress[key] || null;
     } catch (error) {
-      console.error('Session progress okunamadı:', error);
+      console.error('Session progress could not be read:', error);
       return null;
     }
   },
 
-  // Tüm progress'leri getir
+  // Get all progress
   getAll: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SESSION_PROGRESS);
       return data ? JSON.parse(data) : {};
     } catch (error) {
-      console.error('Session progress verileri okunamadı:', error);
+      console.error('Session progress data could not be read:', error);
       return {};
     }
   },
 
-  // Transcript için tüm progress'leri getir
+  // Get all progress for transcript
   getTranscriptProgress: (transcriptId) => {
     try {
       const progress = sessionProgressStorage.getAll();
@@ -256,7 +256,7 @@ export const sessionProgressStorage = {
       
       return transcriptProgress;
     } catch (error) {
-      console.error('Transcript progress okunamadı:', error);
+      console.error('Transcript progress could not be read:', error);
       return {};
     }
   },
@@ -275,7 +275,7 @@ export const sessionProgressStorage = {
     }
   },
 
-  // Transcript'in tüm progress'lerini temizle
+  // Clear all progress for transcript
   clearTranscriptProgress: (transcriptId) => {
     try {
       const progress = sessionProgressStorage.getAll();

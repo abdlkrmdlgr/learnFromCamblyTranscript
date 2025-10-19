@@ -11,7 +11,7 @@ export const useSettings = () => {
         const savedSettings = settingsStorage.get();
         setSettings(savedSettings);
       } catch (error) {
-        console.error('Ayarlar yüklenemedi:', error);
+        console.error('Settings could not be loaded:', error);
       } finally {
         setIsLoading(false);
       }
@@ -26,7 +26,7 @@ export const useSettings = () => {
       setSettings(updatedSettings);
       return true;
     } catch (error) {
-      console.error('Ayarlar güncellenemedi:', error);
+      console.error('Settings could not be updated:', error);
       return false;
     }
   };

@@ -3,9 +3,9 @@
 export const validateTranscriptStructure = (data) => {
   const errors = [];
   
-  // Ana yapı kontrolü
+  // Main structure check
   if (!data || typeof data !== 'object') {
-    errors.push('Geçersiz JSON formatı');
+    errors.push('Invalid JSON format');
     return { isValid: false, errors };
   }
 
@@ -13,9 +13,9 @@ export const validateTranscriptStructure = (data) => {
   const requiredFields = ['grammar_mistakes', 'vocabulary_suggestions', 'quizzes'];
   for (const field of requiredFields) {
     if (!data[field]) {
-      errors.push(`${field} alanı bulunamadı`);
+      errors.push(`${field} field not found`);
     } else if (!Array.isArray(data[field])) {
-      errors.push(`${field} alanı array olmalı`);
+      errors.push(`${field} field must be an array`);
     }
   }
 
@@ -23,7 +23,7 @@ export const validateTranscriptStructure = (data) => {
   if (data.grammar_mistakes && Array.isArray(data.grammar_mistakes)) {
     data.grammar_mistakes.forEach((mistake, index) => {
       if (!mistake.original || !mistake.correction) {
-        errors.push(`Grammar mistake ${index + 1}: original ve correction alanları gerekli`);
+        errors.push(`Grammar mistake ${index + 1}: original and correction fields are required`);
       }
     });
   }
@@ -32,7 +32,7 @@ export const validateTranscriptStructure = (data) => {
   if (data.vocabulary_suggestions && Array.isArray(data.vocabulary_suggestions)) {
     data.vocabulary_suggestions.forEach((vocab, index) => {
       if (!vocab.word || !vocab.definition_en) {
-        errors.push(`Vocabulary ${index + 1}: word ve definition_en alanları gerekli`);
+        errors.push(`Vocabulary ${index + 1}: word and definition_en fields are required`);
       }
     });
   }
@@ -41,10 +41,10 @@ export const validateTranscriptStructure = (data) => {
   if (data.quizzes && Array.isArray(data.quizzes)) {
     data.quizzes.forEach((quiz, index) => {
       if (!quiz.type || !quiz.question_en || !Array.isArray(quiz.options)) {
-        errors.push(`Quiz ${index + 1}: type, question_en ve options alanları gerekli`);
+        errors.push(`Quiz ${index + 1}: type, question_en and options fields are required`);
       }
       if (typeof quiz.correct_answer !== 'number' || quiz.correct_answer < 0) {
-        errors.push(`Quiz ${index + 1}: correct_answer geçerli bir sayı olmalı`);
+        errors.push(`Quiz ${index + 1}: correct_answer must be a valid number`);
       }
     });
   }
@@ -62,7 +62,7 @@ export const formatValidationErrors = (errors) => {
 };
 
 export const sanitizeTranscriptData = (data) => {
-  // Boş alanları temizle ve güvenli hale getir
+  // Clean empty fields and make them safe
   const sanitized = {
     grammar_mistakes: (data.grammar_mistakes || []).filter(item => 
       item.original && item.correction
