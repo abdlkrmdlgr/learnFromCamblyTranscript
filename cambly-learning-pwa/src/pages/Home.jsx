@@ -254,7 +254,7 @@ const Home = ({ showImportModal, setShowImportModal }) => {
         </div>
 
         {/* Card Container */}
-        <div className="max-w-5xl mx-auto px-6 py-12">
+        <div className="max-w-5xl mx-auto px-6 py-4">
           {currentCard && (
             <div className="flex justify-center">
               {currentCard.type === 'quiz' ? (
