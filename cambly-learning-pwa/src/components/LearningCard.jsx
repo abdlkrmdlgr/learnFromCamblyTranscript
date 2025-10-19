@@ -1,20 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useRef } from 'react';
 
 const LearningCard = ({ card, onComplete, showTurkish = false }) => {
-  const [showTurkishMeaning, setShowTurkishMeaning] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const cardRef = useRef(null);
-
-  // Reset Turkish meaning visibility when card changes
-  useEffect(() => {
-    setShowTurkishMeaning(false);
-  }, [card]);
-
-  const handleToggleTurkishMeaning = () => {
-    setShowTurkishMeaning(!showTurkishMeaning);
-  };
 
   const handleNext = () => {
     onComplete('next');
@@ -83,28 +72,15 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
               <p className="text-sm text-gray-700 leading-relaxed">{card.data.explanation_en}</p>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Turkish Meaning - Collapsible */}
-      {card.data.explanation_tr && (
-        <div className="border-t border-gray-200">
-          <button
-            onClick={handleToggleTurkishMeaning}
-            className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
-          >
-            <span className="text-sm font-medium text-gray-700">Turkish Explanation</span>
-            {showTurkishMeaning ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
-          {showTurkishMeaning && (
-            <div className="px-3 pb-3">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-sm text-blue-700 leading-relaxed">{card.data.explanation_tr}</p>
-              </div>
+          {card.data.explanation_tr && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <h4 className="text-xs font-semibold text-blue-800 mb-1">Turkish Explanation</h4>
+              <p className="text-sm text-blue-700 leading-relaxed">{card.data.explanation_tr}</p>
             </div>
           )}
         </div>
-      )}
+      </div>
+
 
       {/* Navigation */}
       <div className="p-3 md:p-4 border-t border-gray-200">
@@ -172,27 +148,16 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
             <p className="text-gray-700 text-sm md:text-base italic leading-relaxed">"{card.data.example_sentence}"</p>
           </div>
         )}
+
+        {/* Turkish Meaning */}
+        {card.data.definition_tr && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h4 className="text-xs font-semibold text-green-800 mb-2">Turkish Meaning</h4>
+            <p className="text-green-700 text-sm md:text-base leading-relaxed">{card.data.definition_tr}</p>
+          </div>
+        )}
       </div>
 
-      {/* Turkish Meaning - Collapsible */}
-      {card.data.definition_tr && (
-        <div className="border-t border-gray-200">
-          <button
-            onClick={handleToggleTurkishMeaning}
-            className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
-          >
-            <span className="text-sm font-medium text-gray-700">Turkish Meaning</span>
-            {showTurkishMeaning ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
-          {showTurkishMeaning && (
-            <div className="px-3 pb-3">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <p className="text-sm text-green-700 leading-relaxed">{card.data.definition_tr}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Navigation */}
       <div className="p-3 md:p-4 border-t border-gray-200">

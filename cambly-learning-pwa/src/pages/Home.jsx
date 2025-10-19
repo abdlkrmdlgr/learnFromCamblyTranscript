@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, BookOpen, Brain, Target, TrendingUp, FileText, BookOpenCheck, HelpCircle } from 'lucide-react';
 import LearningCard from '../components/LearningCard';
 import QuizCard from '../components/QuizCard';
-import ImportModal from '../components/ImportModal';
 import { useTranscripts } from '../hooks/useTranscripts';
 import { useSettings } from '../hooks/useSettings';
 import { progressStorage } from '../utils/storage';
@@ -20,7 +19,6 @@ const Home = ({ showImportModal, setShowImportModal }) => {
   });
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
 
   const { transcripts, isLoading: transcriptsLoading, addTranscript, getLearningCards, getTotalStats } = useTranscripts();
   const { settings } = useSettings();
@@ -70,24 +68,6 @@ const Home = ({ showImportModal, setShowImportModal }) => {
     setIsSessionActive(false);
   };
 
-  const handleImport = (transcript) => {
-    if (isImporting) {
-      console.log('Import already in progress, skipping...');
-      return;
-    }
-    
-    console.log('Home handleImport called with transcript:', transcript);
-    setIsImporting(true);
-    
-    // Transcript'i state'e ekle
-    addTranscript(transcript);
-    setShowImportModal(false);
-    
-    // Import işlemi tamamlandıktan sonra flag'i sıfırla
-    setTimeout(() => {
-      setIsImporting(false);
-    }, 1000);
-  };
 
 
   const renderEmptyState = () => (
@@ -299,82 +279,28 @@ const Home = ({ showImportModal, setShowImportModal }) => {
 
   if (transcriptsLoading) {
     return (
-      <>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
-        
-        {/* Import Modal */}
-        <ImportModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={handleImport}
-        />
-      </>
+      </div>
     );
   }
 
   if (transcripts.length === 0) {
-    return (
-      <>
-        {renderEmptyState()}
-        
-        {/* Import Modal */}
-        {console.log('Rendering ImportModal in empty state, showImportModal:', showImportModal)}
-        <ImportModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={handleImport}
-        />
-      </>
-    );
+    return renderEmptyState();
   }
 
   if (sessionComplete) {
-    return (
-      <>
-        {renderSessionComplete()}
-        
-        {/* Import Modal */}
-        <ImportModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={handleImport}
-        />
-      </>
-    );
+    return renderSessionComplete();
   }
 
   if (isSessionActive && sessionCards.length > 0) {
-    return (
-      <>
-        {renderLearningSession()}
-        
-        {/* Import Modal */}
-        <ImportModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={handleImport}
-        />
-      </>
-    );
+    return renderLearningSession();
   }
 
-  return (
-    <>
-      {renderMainDashboard()}
-      
-      {/* Import Modal */}
-      <ImportModal
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onImport={handleImport}
-      />
-    </>
-  );
+  return renderMainDashboard();
 };
 
 export default Home;

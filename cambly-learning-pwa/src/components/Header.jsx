@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, History, BarChart3, Settings, BookOpen, Upload, X } from 'lucide-react';
+import { Home, History, BarChart3, Settings, BookOpen, Upload, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 
 const Header = ({ onImportClick }) => {
@@ -68,11 +68,9 @@ const Header = ({ onImportClick }) => {
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
             >
               {isMobileMenuOpen ? (
-                <X size={24} />
+                <EyeOff size={24} />
               ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                <Eye size={24} />
               )}
             </button>
           </div>
@@ -87,9 +85,8 @@ const Header = ({ onImportClick }) => {
         )}
 
         {/* Mobile Drawer */}
-        <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}>
+        {isMobileMenuOpen && (
+          <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 md:hidden">
           <div className="flex flex-col h-full">
             {/* Drawer Header */}
             <div className="flex items-center justify-between p-4 border-b">
@@ -103,7 +100,7 @@ const Header = ({ onImportClick }) => {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
               >
-                <X size={24} />
+                <EyeOff size={24} />
               </button>
             </div>
 
@@ -144,6 +141,7 @@ const Header = ({ onImportClick }) => {
             </nav>
           </div>
         </div>
+        )}
       </div>
     </header>
   );
