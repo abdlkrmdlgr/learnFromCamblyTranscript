@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, History, BarChart3, Settings, BookOpen, Upload, Eye, EyeOff } from 'lucide-react';
+import { Home, History, BarChart3, Settings, BookOpen, Upload, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const Header = ({ onImportClick }) => {
@@ -68,9 +68,9 @@ const Header = ({ onImportClick }) => {
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
             >
               {isMobileMenuOpen ? (
-                <EyeOff size={24} />
+                <X size={24} />
               ) : (
-                <Eye size={24} />
+                <Menu size={24} />
               )}
             </button>
           </div>
@@ -100,7 +100,7 @@ const Header = ({ onImportClick }) => {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
               >
-                <EyeOff size={24} />
+                <X size={24} />
               </button>
             </div>
 
