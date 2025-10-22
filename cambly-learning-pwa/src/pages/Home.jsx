@@ -118,7 +118,9 @@ const Home = ({ showImportModal, setShowImportModal }) => {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {transcripts.map((transcript) => (
+                {transcripts
+                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                  .map((transcript) => (
                 <div key={transcript.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
