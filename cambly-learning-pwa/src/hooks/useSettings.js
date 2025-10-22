@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { settingsStorage } from '../utils/storage';
 
 export const useSettings = () => {
-  const [settings, setSettings] = useState({ showTurkish: false });
+  const [settings, setSettings] = useState({ showTurkish: true });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

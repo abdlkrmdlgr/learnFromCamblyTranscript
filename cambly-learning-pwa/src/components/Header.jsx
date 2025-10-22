@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, History, BarChart3, Settings, BookOpen, Upload, Menu, X } from 'lucide-react';
+import { Home, BarChart3, Settings, BookOpen, Upload, Menu, X, Star } from 'lucide-react';
 import { useState } from 'react';
 
 const Header = ({ onImportClick }) => {
@@ -8,7 +8,7 @@ const Header = ({ onImportClick }) => {
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/history', label: 'History', icon: History },
+    { path: '/favorites', label: 'Favorites', icon: Star },
     { path: '/statistics', label: 'Statistics', icon: BarChart3 },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];

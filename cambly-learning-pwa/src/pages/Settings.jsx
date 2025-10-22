@@ -1,11 +1,62 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, Trash2, AlertTriangle, Eye, EyeOff, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Settings as SettingsIcon, Trash2, AlertTriangle, Eye, EyeOff, Info, Calendar, FileText, Brain, Target, Eye as EyeIcon } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
+import { useTranscripts } from '../hooks/useTranscripts';
 import { progressStorage } from '../utils/storage';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Settings = () => {
+  const navigate = useNavigate();
   const { settings, updateSettings, toggleTurkish } = useSettings();
+  const { transcripts, deleteTranscript } = useTranscripts();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteTranscriptModal, setShowDeleteTranscriptModal] = useState(false);
+  const [transcriptToDelete, setTranscriptToDelete] = useState(null);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getTranscriptStats = (transcript) => {
+    const grammarCount = transcript.grammar_mistakes?.length || 0;
+    const vocabCount = transcript.vocabulary_suggestions?.length || 0;
+    const quizCount = transcript.quizzes?.length || 0;
+    
+    return {
+      grammar: grammarCount,
+      vocabulary: vocabCount,
+      quiz: quizCount,
+      total: grammarCount + vocabCount + quizCount
+    };
+  };
+
+  const handleViewTranscript = (transcriptId) => {
+    navigate(`/transcript/${transcriptId}`);
+  };
+
+  const handleDeleteTranscript = (id) => {
+    setTranscriptToDelete(id);
+    setShowDeleteTranscriptModal(true);
+  };
+
+  const confirmDeleteTranscript = () => {
+    if (transcriptToDelete) {
+      deleteTranscript(transcriptToDelete);
+      setShowDeleteTranscriptModal(false);
+      setTranscriptToDelete(null);
+    }
+  };
+
+  const cancelDeleteTranscript = () => {
+    setShowDeleteTranscriptModal(false);
+    setTranscriptToDelete(null);
+  };
 
   const handleDeleteAllData = () => {
     if (window.confirm('Are you sure you want to delete all your data? This action cannot be undone.')) {
@@ -75,7 +126,7 @@ const Settings = () => {
           {/* Data Management */}
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Management</h3>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <AlertTriangle size={20} className="text-yellow-600 mt-0.5" />
@@ -89,7 +140,78 @@ const Settings = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* Transcripts Management */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-base font-semibold text-gray-900">Transcripts</h4>
+                  <div className="text-sm text-gray-600">
+                    {transcripts.length} transcript{transcripts.length !== 1 ? 's' : ''}
+                  </div>
+                </div>
+                
+                {transcripts.length === 0 ? (
+                  <div className="text-center py-6 bg-gray-50 rounded-lg">
+                    <FileText size={32} className="text-gray-400 mx-auto mb-2" />
+                    <h5 className="text-sm font-medium text-gray-900 mb-1">No transcripts yet</h5>
+                    <p className="text-xs text-gray-600">Start by uploading your first JSON file.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {transcripts
+                      .sort((a, b) => new Date(b.date) - new Date(a.date))
+                      .map(transcript => {
+                        const stats = getTranscriptStats(transcript);
+                        return (
+                          <div key={transcript.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+                                  <Calendar size={16} className="text-primary-600" />
+                                </div>
+                                <div>
+                                  <h5 className="text-sm font-semibold text-gray-900">
+                                    {formatDate(transcript.date)}
+                                  </h5>
+                                  <div className="flex items-center space-x-2 text-xs text-gray-600">
+                                    <span className="flex items-center space-x-1">
+                                      <FileText size={12} />
+                                      <span>{stats.grammar} grammar</span>
+                                    </span>
+                                    <span className="flex items-center space-x-1">
+                                      <Brain size={12} />
+                                      <span>{stats.vocabulary} vocabulary</span>
+                                    </span>
+                                    <span className="flex items-center space-x-1">
+                                      <Target size={12} />
+                                      <span>{stats.quiz} quiz</span>
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <button
+                                  onClick={() => handleViewTranscript(transcript.id)}
+                                  className="flex items-center space-x-1 px-2 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                                >
+                                  <EyeIcon size={12} />
+                                  <span>View</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteTranscript(transcript.id)}
+                                  className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                 <div>
                   <h4 className="text-sm font-medium text-gray-900">Delete All Data</h4>
                   <p className="text-sm text-gray-600">
@@ -173,10 +295,11 @@ const Settings = () => {
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete All Data Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
@@ -214,6 +337,18 @@ const Settings = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Transcript Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteTranscriptModal}
+        onClose={cancelDeleteTranscript}
+        onConfirm={confirmDeleteTranscript}
+        title="Delete Transcript"
+        message="Are you sure you want to delete this transcript? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </div>
   );
 };

@@ -1,41 +1,121 @@
-import { useState, useEffect } from 'react';
-import { TrendingUp, Calendar, Target, BookOpen, Brain, FileText, BarChart3 } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { TrendingUp, Calendar, Target, BarChart3 } from 'lucide-react';
 import { useTranscripts } from '../hooks/useTranscripts';
-import { progressStorage } from '../utils/storage';
+import { progressStorage, sessionProgressStorage, cardCountStorage } from '../utils/storage';
 
 const Statistics = () => {
   const [dailyStats, setDailyStats] = useState(null);
-  const [recentSessions, setRecentSessions] = useState([]);
   
-  const { getTotalStats } = useTranscripts();
+  const { transcripts, getTotalStats } = useTranscripts();
 
-  useEffect(() => {
-    const loadStats = () => {
+
+  const loadStats = useCallback(async () => {
+    try {
       const progress = progressStorage.get();
       const stats = progressStorage.getDailyStats();
       
+      console.log('Loading stats:', { progress, stats });
       setDailyStats(stats);
-      setRecentSessions(progress.studySessions.slice(-10).reverse());
-    };
-
-    loadStats();
+    } catch (error) {
+      console.error('Stats could not be loaded:', error);
+    }
   }, []);
+
+  useEffect(() => {
+    loadStats();
+    
+    // localStorage değişikliklerini dinle
+    const handleStorageChange = (e) => {
+      if (e.key === 'cambly_progress' || e.key === 'cambly_transcripts' || e.key === 'cambly_session_progress') {
+        console.log('Storage change detected:', e.key);
+        loadStats();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Aynı tab'da localStorage değişikliklerini dinle
+    const handleLocalStorageChange = () => {
+      console.log('Data updated event received');
+      loadStats();
+    };
+    
+    // Custom event listener for same-tab updates
+    window.addEventListener('dataUpdated', handleLocalStorageChange);
+    
+    // Periyodik kontrol (5 saniyede bir)
+    const interval = setInterval(() => {
+      console.log('Periodic stats check');
+      loadStats();
+    }, 5000);
+    
+    // Sayfa focus olduğunda güncelle
+    const handleFocus = () => {
+      console.log('Page focused, updating stats');
+      loadStats();
+    };
+    
+    // Sayfa görünür olduğunda güncelle
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('Page visible, updating stats');
+        loadStats();
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('dataUpdated', handleLocalStorageChange);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [loadStats]);
+
+  // Transcripts değiştiğinde istatistikleri güncelle
+  useEffect(() => {
+    loadStats();
+  }, [transcripts, loadStats]);
 
   const totalStats = getTotalStats();
 
-  const getStreakDays = () => {
-    if (recentSessions.length === 0) return 0;
+
+  const weeklyActivity = useMemo(() => {
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      // Card count storage'dan o günkü card count'ları al
+      const cardCount = cardCountStorage.getCardCount(dateStr);
+      
+      last7Days.push({
+        date: dateStr,
+        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        cardsStudied: cardCount,
+        quizScore: 0 // Quiz score'u kaldırdık
+      });
+    }
+    
+    return last7Days;
+  }, []);
+
+  const streakDays = useMemo(() => {
+    // Card count storage'dan streak hesapla
+    const counts = cardCountStorage.getAll();
+    const today = new Date().toISOString().split('T')[0];
     
     let streak = 0;
-    const today = new Date().toISOString().split('T')[0];
-    const sortedSessions = recentSessions.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    for (let i = 0; i < sortedSessions.length; i++) {
-      const sessionDate = new Date(sortedSessions[i].date);
-      const expectedDate = new Date(today);
-      expectedDate.setDate(expectedDate.getDate() - i);
+    for (let i = 0; i < 365; i++) { // Maksimum 365 gün kontrol et
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
       
-      if (sessionDate.toISOString().split('T')[0] === expectedDate.toISOString().split('T')[0]) {
+      if (counts[dateStr] && counts[dateStr] > 0) {
         streak++;
       } else {
         break;
@@ -43,29 +123,7 @@ const Statistics = () => {
     }
     
     return streak;
-  };
-
-  const getWeeklyActivity = () => {
-    const last7Days = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      
-      const session = recentSessions.find(s => s.date === dateStr);
-      last7Days.push({
-        date: dateStr,
-        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        cardsStudied: session?.cardsStudied || 0,
-        quizScore: session?.quizScore || 0
-      });
-    }
-    
-    return last7Days;
-  };
-
-  const weeklyActivity = getWeeklyActivity();
-  const streakDays = getStreakDays();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -197,42 +255,6 @@ const Statistics = () => {
           </div>
         </div>
 
-        {/* Recent Sessions */}
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Sessions</h3>
-          {recentSessions.length === 0 ? (
-            <div className="text-center py-8">
-              <BookOpen size={48} className="text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No sessions yet</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentSessions.slice(0, 10).map((session, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                      <Target size={16} className="text-primary-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {new Date(session.date).toLocaleDateString('en-US')}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {session.cardsStudied} card{session.cardsStudied !== 1 ? 's' : ''} • {Math.round(session.quizScore * 100)}% accuracy
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {new Date(session.completedAt).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

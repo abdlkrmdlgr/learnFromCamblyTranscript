@@ -4,7 +4,9 @@ const STORAGE_KEYS = {
   TRANSCRIPTS: 'cambly_transcripts',
   SETTINGS: 'cambly_settings',
   PROGRESS: 'cambly_progress',
-  SESSION_PROGRESS: 'cambly_session_progress'
+  SESSION_PROGRESS: 'cambly_session_progress',
+  FAVORITES: 'cambly_favorites',
+  CARD_COUNTS: 'cambly_card_counts'
 };
 
 // Manage transcript data
@@ -39,6 +41,10 @@ export const transcriptStorage = {
         existingTranscript.updatedAt = new Date().toISOString();
         
         localStorage.setItem(STORAGE_KEYS.TRANSCRIPTS, JSON.stringify(transcripts));
+        
+        // Custom event dispatch for same-tab updates
+        window.dispatchEvent(new CustomEvent('dataUpdated'));
+        
         return existingTranscript;
       }
       
@@ -56,6 +62,10 @@ export const transcriptStorage = {
       transcripts.push(newTranscript);
       console.log('Updated transcripts array:', transcripts);
       localStorage.setItem(STORAGE_KEYS.TRANSCRIPTS, JSON.stringify(transcripts));
+      
+      // Custom event dispatch for same-tab updates
+      window.dispatchEvent(new CustomEvent('dataUpdated'));
+      
       return newTranscript;
     } catch (error) {
       console.error('Transcript eklenemedi:', error);
@@ -153,6 +163,10 @@ export const progressStorage = {
       
       progress.studySessions.push(newSession);
       localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress));
+      
+      // Custom event dispatch for same-tab updates
+      window.dispatchEvent(new CustomEvent('dataUpdated'));
+      
       return newSession;
     } catch (error) {
       console.error('Study session could not be added:', error);
@@ -165,8 +179,12 @@ export const progressStorage = {
     const progress = progressStorage.get();
     const sessions = progress.studySessions;
     
+    // Card count storage'dan toplam card count'ları al
+    const cardCounts = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARD_COUNTS) || '{}');
+    const totalCardCounts = Object.values(cardCounts).reduce((sum, count) => sum + count, 0);
+    
     const totalDays = new Set(sessions.map(s => s.date)).size;
-    const totalCards = sessions.reduce((sum, s) => sum + s.cardsStudied, 0);
+    const totalCards = sessions.reduce((sum, s) => sum + s.cardsStudied, 0) + totalCardCounts;
     const avgQuizScore = sessions.length > 0 
       ? sessions.reduce((sum, s) => sum + s.quizScore, 0) / sessions.length 
       : 0;
@@ -201,6 +219,9 @@ export const sessionProgressStorage = {
       const progress = sessionProgressStorage.getAll();
       const key = `${transcriptId}-${sectionType}`;
       
+      // Önceki index'i al
+      const previousIndex = progress[key]?.currentIndex || 0;
+      
       progress[key] = {
         transcriptId,
         sectionType,
@@ -211,6 +232,19 @@ export const sessionProgressStorage = {
       };
       
       localStorage.setItem(STORAGE_KEYS.SESSION_PROGRESS, JSON.stringify(progress));
+      
+      // Eğer index arttıysa, card count'a ekle
+      if (currentIndex > previousIndex) {
+        // Card count'u doğrudan localStorage'a ekle
+        const counts = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARD_COUNTS) || '{}');
+        const today = new Date().toISOString().split('T')[0];
+        counts[today] = (counts[today] || 0) + 1;
+        localStorage.setItem(STORAGE_KEYS.CARD_COUNTS, JSON.stringify(counts));
+      }
+      
+      // Custom event dispatch for same-tab updates
+      window.dispatchEvent(new CustomEvent('dataUpdated'));
+      
       return true;
     } catch (error) {
       console.error('Session progress kaydedilemedi:', error);
@@ -286,6 +320,200 @@ export const sessionProgressStorage = {
       return true;
     } catch (error) {
       console.error('Transcript progress temizlenemedi:', error);
+      return false;
+    }
+  }
+};
+
+// Manage favorites
+export const favoritesStorage = {
+  // Get all favorites
+  getAll: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.FAVORITES);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Favorites data could not be read:', error);
+      return [];
+    }
+  },
+
+  // Add to favorites
+  add: (cardId, cardType, transcriptId, cardData) => {
+    try {
+      const favorites = favoritesStorage.getAll();
+      
+      // Check if already exists
+      const exists = favorites.find(fav => fav.cardId === cardId);
+      if (exists) return exists;
+      
+      const newFavorite = {
+        id: crypto.randomUUID(),
+        cardId,
+        cardType, // 'grammar', 'vocabulary', 'quiz'
+        transcriptId,
+        cardData,
+        addedAt: new Date().toISOString()
+      };
+      
+      favorites.push(newFavorite);
+      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
+      return newFavorite;
+    } catch (error) {
+      console.error('Favorite could not be added:', error);
+      throw error;
+    }
+  },
+
+  // Remove from favorites
+  remove: (cardId) => {
+    try {
+      const favorites = favoritesStorage.getAll();
+      const filtered = favorites.filter(fav => fav.cardId !== cardId);
+      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(filtered));
+      return true;
+    } catch (error) {
+      console.error('Favorite could not be removed:', error);
+      return false;
+    }
+  },
+
+  // Check if card is favorite
+  isFavorite: (cardId) => {
+    try {
+      const favorites = favoritesStorage.getAll();
+      return favorites.some(fav => fav.cardId === cardId);
+    } catch (error) {
+      console.error('Favorite status could not be checked:', error);
+      return false;
+    }
+  },
+
+  // Get favorites by type
+  getByType: (cardType) => {
+    try {
+      const favorites = favoritesStorage.getAll();
+      return favorites.filter(fav => fav.cardType === cardType);
+    } catch (error) {
+      console.error('Favorites by type could not be retrieved:', error);
+      return [];
+    }
+  },
+
+  // Get favorites by transcript
+  getByTranscript: (transcriptId) => {
+    try {
+      const favorites = favoritesStorage.getAll();
+      return favorites.filter(fav => fav.transcriptId === transcriptId);
+    } catch (error) {
+      console.error('Favorites by transcript could not be retrieved:', error);
+      return [];
+    }
+  },
+
+  // Clear all favorites
+  clearAll: () => {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.FAVORITES);
+      return true;
+    } catch (error) {
+      console.error('Favorites could not be cleared:', error);
+      return false;
+    }
+  }
+};
+
+// Manage card counts
+export const cardCountStorage = {
+  // Get all card counts
+  getAll: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.CARD_COUNTS);
+      return data ? JSON.parse(data) : {};
+    } catch (error) {
+      console.error('Card counts could not be read:', error);
+      return {};
+    }
+  },
+
+  // Add card count for a specific date
+  addCardCount: (date, count = 1) => {
+    try {
+      const counts = cardCountStorage.getAll();
+      const dateStr = date || new Date().toISOString().split('T')[0];
+      
+      if (!counts[dateStr]) {
+        counts[dateStr] = 0;
+      }
+      
+      counts[dateStr] += count;
+      localStorage.setItem(STORAGE_KEYS.CARD_COUNTS, JSON.stringify(counts));
+      
+      // Custom event dispatch for same-tab updates
+      window.dispatchEvent(new CustomEvent('dataUpdated'));
+      
+      return counts[dateStr];
+    } catch (error) {
+      console.error('Card count could not be added:', error);
+      throw error;
+    }
+  },
+
+  // Get card count for a specific date
+  getCardCount: (date) => {
+    try {
+      const counts = cardCountStorage.getAll();
+      const dateStr = date || new Date().toISOString().split('T')[0];
+      return counts[dateStr] || 0;
+    } catch (error) {
+      console.error('Card count could not be read:', error);
+      return 0;
+    }
+  },
+
+  // Get total card counts
+  getTotalCardCounts: () => {
+    try {
+      const counts = cardCountStorage.getAll();
+      return Object.values(counts).reduce((sum, count) => sum + count, 0);
+    } catch (error) {
+      console.error('Total card counts could not be calculated:', error);
+      return 0;
+    }
+  },
+
+  // Get card counts for last 7 days
+  getLast7DaysCounts: () => {
+    try {
+      const counts = cardCountStorage.getAll();
+      const last7Days = [];
+      
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        last7Days.push({
+          date: dateStr,
+          dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
+          cardsStudied: counts[dateStr] || 0
+        });
+      }
+      
+      return last7Days;
+    } catch (error) {
+      console.error('Last 7 days counts could not be calculated:', error);
+      return [];
+    }
+  },
+
+  // Clear all card counts
+  clearAll: () => {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.CARD_COUNTS);
+      return true;
+    } catch (error) {
+      console.error('Card counts could not be cleared:', error);
       return false;
     }
   }

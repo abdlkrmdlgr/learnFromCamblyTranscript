@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, BookOpenCheck, HelpCircle, Calendar, BookOpen } from 'lucide-react';
-import { transcriptStorage, sessionProgressStorage } from '../utils/storage';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, FileText, BookOpenCheck, HelpCircle, Calendar, BookOpen, Star } from 'lucide-react';
+import { transcriptStorage, sessionProgressStorage, favoritesStorage } from '../utils/storage';
+import { useSettings } from '../hooks/useSettings';
 import LearningCard from '../components/LearningCard';
 import QuizCard from '../components/QuizCard';
 import ConfirmModal from '../components/ConfirmModal';
@@ -9,6 +10,8 @@ import ConfirmModal from '../components/ConfirmModal';
 const TranscriptDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { settings } = useSettings();
   const [transcript, setTranscript] = useState(null);
   const [activeSection, setActiveSection] = useState(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -22,6 +25,8 @@ const TranscriptDetail = () => {
   const [sessionComplete, setSessionComplete] = useState(false);
   const [transcriptProgress, setTranscriptProgress] = useState({});
   const [showRestartModal, setShowRestartModal] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [favoriteCards, setFavoriteCards] = useState([]);
 
   useEffect(() => {
     const foundTranscript = transcriptStorage.getById(id);
@@ -30,10 +35,66 @@ const TranscriptDetail = () => {
       // Load progress for this transcript
       const progress = sessionProgressStorage.getTranscriptProgress(foundTranscript.id);
       setTranscriptProgress(progress);
+      // Load favorite cards for this transcript
+      loadFavoriteCards();
+      
     } else {
       navigate('/');
     }
   }, [id, navigate]);
+
+  // Handle card navigation from favorites
+  useEffect(() => {
+    if (transcript && location.state?.cardId && location.state?.cardType) {
+      const cardId = location.state.cardId;
+      const cardType = location.state.cardType;
+      
+      // Find the card index in the appropriate section
+      let targetIndex = -1;
+      let sectionType = null;
+      
+      if (cardType === 'grammar' && transcript.grammar_mistakes) {
+        // Try to find by ID first, then by content
+        targetIndex = transcript.grammar_mistakes.findIndex(card => card.id === cardId);
+        if (targetIndex === -1) {
+          // If not found by ID, try to find by content matching
+          const favoriteCard = favoritesStorage.getAll().find(fav => fav.cardId === cardId);
+          if (favoriteCard && favoriteCard.cardData) {
+            targetIndex = transcript.grammar_mistakes.findIndex(card => 
+              card.original === favoriteCard.cardData.original
+            );
+          }
+        }
+        sectionType = 'grammar';
+      } else if (cardType === 'vocabulary' && transcript.vocabulary_suggestions) {
+        targetIndex = transcript.vocabulary_suggestions.findIndex(card => card.id === cardId);
+        if (targetIndex === -1) {
+          const favoriteCard = favoritesStorage.getAll().find(fav => fav.cardId === cardId);
+          if (favoriteCard && favoriteCard.cardData) {
+            targetIndex = transcript.vocabulary_suggestions.findIndex(card => 
+              card.word === favoriteCard.cardData.word
+            );
+          }
+        }
+        sectionType = 'vocabulary';
+      } else if (cardType === 'quiz' && transcript.quizzes) {
+        targetIndex = transcript.quizzes.findIndex(card => card.id === cardId);
+        if (targetIndex === -1) {
+          const favoriteCard = favoritesStorage.getAll().find(fav => fav.cardId === cardId);
+          if (favoriteCard && favoriteCard.cardData) {
+            targetIndex = transcript.quizzes.findIndex(card => 
+              card.question_en === favoriteCard.cardData.question_en
+            );
+          }
+        }
+        sectionType = 'quiz';
+      }
+      
+      if (targetIndex !== -1 && sectionType) {
+        startSectionSessionWithIndex(sectionType, targetIndex);
+      }
+    }
+  }, [transcript, location.state]);
 
   // Force load progress when activeSection changes
   useEffect(() => {
@@ -47,7 +108,40 @@ const TranscriptDetail = () => {
     }
   }, [transcript, activeSection]);
 
-  const startSectionSession = (sectionType, resumeFromProgress = false) => {
+  const startSectionSessionWithIndex = (sectionType, targetIndex) => {
+    if (!transcript) return;
+    
+    let cards = [];
+    if (sectionType === 'grammar') {
+      cards = transcript.grammar_mistakes?.map((mistake, index) => ({
+        id: `grammar-${index}`,
+        type: 'grammar',
+        data: mistake
+      })) || [];
+    } else if (sectionType === 'vocabulary') {
+      cards = transcript.vocabulary_suggestions?.map((vocab, index) => ({
+        id: `vocab-${index}`,
+        type: 'vocabulary',
+        data: vocab
+      })) || [];
+    } else if (sectionType === 'quiz') {
+      cards = transcript.quizzes?.map((quiz, index) => ({
+        id: `quiz-${index}`,
+        type: 'quiz',
+        data: quiz
+      })) || [];
+    }
+    
+    
+    setSessionCards(cards);
+    setCurrentCardIndex(targetIndex);
+    setSessionStats({ completed: targetIndex, correct: targetIndex, total: cards.length });
+    setIsSessionActive(true);
+    setSessionComplete(false);
+    setActiveSection(sectionType);
+  };
+
+  const startSectionSession = (sectionType, resumeFromProgress = false, targetCard = null) => {
     if (!transcript) return;
     
     let cards = [];
@@ -77,6 +171,12 @@ const TranscriptDetail = () => {
     
     if (resumeFromProgress && savedProgress && !savedProgress.completed) {
       startIndex = savedProgress.currentIndex;
+    } else if (targetCard) {
+      // Find the target card index
+      const targetIndex = cards.findIndex(card => card.id === targetCard.id);
+      if (targetIndex !== -1) {
+        startIndex = targetIndex;
+      }
     }
     
     setSessionCards(cards);
@@ -176,6 +276,35 @@ const TranscriptDetail = () => {
     setShowRestartModal(false);
   };
 
+  const loadFavoriteCards = () => {
+    if (transcript) {
+      const favorites = favoritesStorage.getByTranscript(transcript.id);
+      setFavoriteCards(favorites);
+    }
+  };
+
+  const startFavoriteSession = () => {
+    if (favoriteCards.length === 0) return;
+    
+    const cards = favoriteCards.map(fav => ({
+      id: fav.cardId,
+      type: fav.cardType,
+      data: fav.cardData,
+      transcriptDate: transcript.date
+    }));
+    
+    setSessionCards(cards);
+    setCurrentCardIndex(0);
+    setSessionStats({
+      completed: 0,
+      correct: 0,
+      total: cards.length
+    });
+    setIsSessionActive(true);
+    setActiveSection('favorites');
+    setShowFavorites(false);
+  };
+
   if (!transcript) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -273,6 +402,7 @@ const TranscriptDetail = () => {
                     {activeSection === 'grammar' && 'Grammar Practice'}
                     {activeSection === 'vocabulary' && 'Vocabulary Practice'}
                     {activeSection === 'quiz' && 'Quiz Practice'}
+                    {activeSection === 'favorites' && 'Favorite Cards'}
                   </h1>
                   <div className="text-xs text-gray-500 mt-0.5">
                     {currentCardIndex + 1} / {sessionCards.length}
@@ -316,13 +446,15 @@ const TranscriptDetail = () => {
               <QuizCard
                 card={currentCard}
                 onComplete={handleCardComplete}
-                showTurkish={false}
+                showTurkish={settings.showTurkish}
+                transcriptId={transcript.id}
               />
             ) : (
               <LearningCard
                 card={currentCard}
                 onComplete={handleCardComplete}
-                showTurkish={false}
+                showTurkish={settings.showTurkish}
+                transcriptId={transcript.id}
               />
             )}
           </div>
@@ -385,6 +517,34 @@ const TranscriptDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Favorites Section */}
+        {favoriteCards.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 mb-4 md:mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <Star size={24} className="text-yellow-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">Favorite Cards</h2>
+                  <p className="text-sm md:text-base text-gray-600">
+                    Cards you've added to favorites from this transcript
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={startFavoriteSession}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium"
+              >
+                Study Favorite Cards
+              </button>
+            </div>
+            <div className="text-2xl md:text-3xl font-bold text-yellow-600">
+              {favoriteCards.length} favorite cards
+            </div>
+          </div>
+        )}
 
         {/* Learning Sections */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">

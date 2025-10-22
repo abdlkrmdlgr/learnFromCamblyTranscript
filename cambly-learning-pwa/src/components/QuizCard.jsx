@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowLeft, ArrowRight, Star } from 'lucide-react';
+import { favoritesStorage } from '../utils/storage';
 
-const QuizCard = ({ card, onComplete, showTurkish = false }) => {
+const QuizCard = ({ card, onComplete, showTurkish = false, transcriptId }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Check favorite status when card changes
+  useEffect(() => {
+    setIsFavorite(favoritesStorage.isFavorite(card.id));
+  }, [card.id]);
 
   // Reset states when new card arrives
   useEffect(() => {
@@ -32,6 +39,17 @@ const QuizCard = ({ card, onComplete, showTurkish = false }) => {
 
   const handlePrevious = () => {
     onComplete('previous');
+  };
+
+  const handleToggleFavorite = (e) => {
+    e.stopPropagation();
+    if (isFavorite) {
+      favoritesStorage.remove(card.id);
+      setIsFavorite(false);
+    } else {
+      favoritesStorage.add(card.id, 'quiz', transcriptId, card.data);
+      setIsFavorite(true);
+    }
   };
 
   const getAnswerStyle = (index) => {
@@ -76,8 +94,20 @@ const QuizCard = ({ card, onComplete, showTurkish = false }) => {
             {card.data.type === 'grammar' ? 'Grammar Quiz' : 'Vocabulary Quiz'}
           </span>
         </div>
-        <div className="text-sm text-gray-500">
-          {card.transcriptDate}
+        <div className="flex items-center space-x-3">
+          <div className="text-sm text-gray-500">
+            {card.transcriptDate}
+          </div>
+          <button
+            onClick={handleToggleFavorite}
+            className={`p-2 rounded-lg transition-all duration-200 ${
+              isFavorite 
+                ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50' 
+                : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'
+            }`}
+          >
+            <Star size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+          </button>
         </div>
       </div>
 

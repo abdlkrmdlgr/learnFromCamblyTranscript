@@ -1,9 +1,17 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Star } from 'lucide-react';
+import { favoritesStorage } from '../utils/storage';
 
-const LearningCard = ({ card, onComplete, showTurkish = false }) => {
+const LearningCard = ({ card, onComplete, showTurkish = false, transcriptId }) => {
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
   const cardRef = useRef(null);
+
+  // Check favorite status when card changes
+  useEffect(() => {
+    setIsFavorite(favoritesStorage.isFavorite(card.id));
+  }, [card.id]);
 
   const handleNext = () => {
     onComplete('next');
@@ -11,6 +19,17 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
 
   const handlePrevious = () => {
     onComplete('previous');
+  };
+
+  const handleToggleFavorite = (e) => {
+    e.stopPropagation();
+    if (isFavorite) {
+      favoritesStorage.remove(card.id);
+      setIsFavorite(false);
+    } else {
+      favoritesStorage.add(card.id, card.type, transcriptId, card.data);
+      setIsFavorite(true);
+    }
   };
 
 
@@ -64,8 +83,23 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
       onTouchEnd={handleTouchEnd}
       onDoubleClick={handleDoubleTap}
     >
+      {/* Header with Star Button */}
+      <div className="flex justify-between items-center p-4 md:p-6 pb-2">
+        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+        <button
+          onClick={handleToggleFavorite}
+          className={`p-2 rounded-lg transition-all duration-200 ${
+            isFavorite 
+              ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50' 
+              : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'
+          }`}
+        >
+          <Star size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+        </button>
+      </div>
+
       {/* Content */}
-      <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-4">
+      <div className="flex-1 px-4 md:px-6 pb-4 flex flex-col justify-center space-y-4">
         <div className="text-center space-y-2">
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <h3 className="text-xs font-medium text-gray-600 mb-2">Original Sentence</h3>
@@ -90,7 +124,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
               <p className="text-sm text-gray-700 leading-relaxed">{card.data.explanation_en}</p>
             </div>
           )}
-          {card.data.explanation_tr && (
+          {card.data.explanation_tr && showTurkish && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <h4 className="text-xs font-semibold text-blue-800 mb-1">Turkish Explanation</h4>
               <p className="text-sm text-blue-700 leading-relaxed">{card.data.explanation_tr}</p>
@@ -145,8 +179,23 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
       onTouchEnd={handleTouchEnd}
       onDoubleClick={handleDoubleTap}
     >
+      {/* Header with Star Button */}
+      <div className="flex justify-between items-center p-4 md:p-6 pb-2">
+        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+        <button
+          onClick={handleToggleFavorite}
+          className={`p-2 rounded-lg transition-all duration-200 ${
+            isFavorite 
+              ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50' 
+              : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'
+          }`}
+        >
+          <Star size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+        </button>
+      </div>
+
       {/* Content */}
-      <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-4">
+      <div className="flex-1 px-4 md:px-6 pb-4 flex flex-col justify-center space-y-4">
         {/* Word and Definition */}
         <div className="text-center space-y-3">
           <div className="bg-blue-50 rounded-lg p-4 md:p-6 border border-blue-200">
@@ -169,7 +218,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
         )}
 
         {/* Turkish Meaning */}
-        {card.data.definition_tr && (
+        {card.data.definition_tr && showTurkish && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h4 className="text-xs font-semibold text-green-800 mb-2">Turkish Meaning</h4>
             <p className="text-green-700 text-sm md:text-base leading-relaxed">{card.data.definition_tr}</p>

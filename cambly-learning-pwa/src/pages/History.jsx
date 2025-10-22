@@ -1,18 +1,15 @@
 import { useState } from 'react';
-import { Calendar, BookOpen, Trash2, ArrowLeft, FileText, Brain, Target } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, BookOpen, Trash2, FileText, Brain, Target, Eye } from 'lucide-react';
 import { useTranscripts } from '../hooks/useTranscripts';
-import LearningCard from '../components/LearningCard';
-import QuizCard from '../components/QuizCard';
 import ConfirmModal from '../components/ConfirmModal';
 
 const History = () => {
-  const [selectedTranscript, setSelectedTranscript] = useState(null);
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [showCards, setShowCards] = useState(false);
+  const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [transcriptToDelete, setTranscriptToDelete] = useState(null);
   
-  const { transcripts, deleteTranscript, getTranscriptById } = useTranscripts();
+  const { transcripts, deleteTranscript } = useTranscripts();
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -36,70 +33,8 @@ const History = () => {
     };
   };
 
-  const startReview = (transcript) => {
-    setSelectedTranscript(transcript);
-    setCurrentCardIndex(0);
-    setShowCards(true);
-  };
-
-  const getCurrentCard = () => {
-    if (!selectedTranscript) return null;
-    
-    const allCards = [];
-    
-    // Grammar cards
-    selectedTranscript.grammar_mistakes?.forEach(mistake => {
-      allCards.push({
-        id: `grammar-${mistake.original}`,
-        type: 'grammar',
-        data: mistake,
-        transcriptDate: selectedTranscript.date
-      });
-    });
-    
-    // Vocabulary cards
-    selectedTranscript.vocabulary_suggestions?.forEach(vocab => {
-      allCards.push({
-        id: `vocab-${vocab.word}`,
-        type: 'vocabulary',
-        data: vocab,
-        transcriptDate: selectedTranscript.date
-      });
-    });
-    
-    // Quiz cards
-    selectedTranscript.quizzes?.forEach(quiz => {
-      allCards.push({
-        id: `quiz-${quiz.question_en}`,
-        type: 'quiz',
-        data: quiz,
-        transcriptDate: selectedTranscript.date
-      });
-    });
-    
-    return allCards[currentCardIndex] || null;
-  };
-
-  const handleCardComplete = () => {
-    const allCards = [];
-    selectedTranscript.grammar_mistakes?.forEach(mistake => {
-      allCards.push({ type: 'grammar', data: mistake });
-    });
-    selectedTranscript.vocabulary_suggestions?.forEach(vocab => {
-      allCards.push({ type: 'vocabulary', data: vocab });
-    });
-    selectedTranscript.quizzes?.forEach(quiz => {
-      allCards.push({ type: 'quiz', data: quiz });
-    });
-
-    if (currentCardIndex < allCards.length - 1) {
-      setCurrentCardIndex(prev => prev + 1);
-    } else {
-      // Review completed
-      setShowCards(false);
-      setSelectedTranscript(null);
-      setCurrentCardIndex(0);
-    }
+  const handleViewTranscript = (transcriptId) => {
+    navigate(`/transcript/${transcriptId}`);
   };
 
   const handleDeleteTranscript = (id) => {
@@ -171,10 +106,11 @@ const History = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => startReview(transcript)}
-                          className="btn-primary"
+                          onClick={() => handleViewTranscript(transcript.id)}
+                          className="btn-primary flex items-center space-x-2"
                         >
-                          Review
+                          <Eye size={16} />
+                          <span>View</span>
                         </button>
                         <button
                           onClick={() => handleDeleteTranscript(transcript.id)}
@@ -193,96 +129,6 @@ const History = () => {
     </div>
   );
 
-  const renderCardReview = () => {
-    const currentCard = getCurrentCard();
-    const allCards = [];
-    selectedTranscript.grammar_mistakes?.forEach(mistake => {
-      allCards.push({ type: 'grammar', data: mistake });
-    });
-    selectedTranscript.vocabulary_suggestions?.forEach(vocab => {
-      allCards.push({ type: 'vocabulary', data: vocab });
-    });
-    selectedTranscript.quizzes?.forEach(quiz => {
-      allCards.push({ type: 'quiz', data: quiz });
-    });
-
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-4xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => setShowCards(false)}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                <ArrowLeft size={20} />
-                <span>Back</span>
-              </button>
-              <div className="text-center">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {formatDate(selectedTranscript.date)}
-                </h2>
-                <div className="text-sm text-gray-600">
-                  {currentCardIndex + 1} / {allCards.length}
-                </div>
-              </div>
-              <div></div>
-            </div>
-            
-            {/* Progress Bar */}
-            <div className="mt-4">
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((currentCardIndex + 1) / allCards.length) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          {currentCard && (
-            <>
-              {currentCard.type === 'quiz' ? (
-                <QuizCard
-                  card={currentCard}
-                  onComplete={handleCardComplete}
-                  showTurkish={false}
-                />
-              ) : (
-                <LearningCard
-                  card={currentCard}
-                  onComplete={handleCardComplete}
-                  showTurkish={false}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  if (showCards && selectedTranscript) {
-    return (
-      <>
-        {renderCardReview()}
-        
-        {/* Delete Confirmation Modal */}
-        <ConfirmModal
-          isOpen={showDeleteModal}
-          onClose={cancelDelete}
-          onConfirm={confirmDelete}
-          title="Delete Transcript"
-          message="Are you sure you want to delete this transcript? This action cannot be undone."
-          confirmText="Delete"
-          cancelText="Cancel"
-          type="danger"
-        />
-      </>
-    );
-  }
 
   return (
     <>
