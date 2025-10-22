@@ -1,18 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings as SettingsIcon, Trash2, AlertTriangle, Eye, EyeOff, Info, Calendar, FileText, Brain, Target, Eye as EyeIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Trash2, AlertTriangle, Eye, EyeOff, Info, Calendar, FileText, Brain, Target, Eye as EyeIcon, RefreshCw, Download, Shield, Database } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { useTranscripts } from '../hooks/useTranscripts';
+import { useVersion } from '../hooks/useVersion';
 import { progressStorage } from '../utils/storage';
+import { getStorageUsage, validateDataIntegrity, hasBackup, getBackupInfo } from '../utils/backup';
 import ConfirmModal from '../components/ConfirmModal';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { settings, updateSettings, toggleTurkish } = useSettings();
   const { transcripts, deleteTranscript } = useTranscripts();
+  const { version, updateAvailable, isOnline, isUpdating, updateProgress, checkForUpdates, applyUpdate, clearCache } = useVersion();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeleteTranscriptModal, setShowDeleteTranscriptModal] = useState(false);
   const [transcriptToDelete, setTranscriptToDelete] = useState(null);
+  const [showCacheClearModal, setShowCacheClearModal] = useState(false);
+  const [isClearingCache, setIsClearingCache] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState(null); // 'checking', 'available', 'current', 'error'
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [storageUsage, setStorageUsage] = useState(null);
+  const [dataIntegrity, setDataIntegrity] = useState(null);
+  const [backupInfo, setBackupInfo] = useState(null);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -57,6 +68,73 @@ const Settings = () => {
     setShowDeleteTranscriptModal(false);
     setTranscriptToDelete(null);
   };
+
+  const handleClearCache = async () => {
+    setIsClearingCache(true);
+    try {
+      const success = await clearCache();
+      if (success) {
+        alert('Cache başarıyla temizlendi. Sayfa yeniden yüklenecek.');
+        window.location.reload();
+      } else {
+        alert('Cache temizlenirken bir hata oluştu.');
+      }
+    } catch (error) {
+      console.error('Cache clear error:', error);
+      alert('Cache temizlenirken bir hata oluştu.');
+    } finally {
+      setIsClearingCache(false);
+      setShowCacheClearModal(false);
+    }
+  };
+
+  const handleCheckForUpdates = async () => {
+    setIsCheckingUpdate(true);
+    setUpdateStatus('checking');
+    setShowUpdateModal(true);
+    
+    try {
+      const hasUpdate = await checkForUpdates();
+      if (hasUpdate) {
+        setUpdateStatus('available');
+      } else {
+        setUpdateStatus('current');
+      }
+    } catch (error) {
+      console.error('Update check error:', error);
+      // Check if it's a network error or service worker error
+      if (!navigator.onLine) {
+        setUpdateStatus('error');
+      } else {
+        // If it's not a network error, treat as "no updates available"
+        setUpdateStatus('current');
+      }
+    } finally {
+      setIsCheckingUpdate(false);
+    }
+  };
+
+  const handleApplyUpdate = () => {
+    applyUpdate();
+    setShowUpdateModal(false);
+  };
+
+  const closeUpdateModal = () => {
+    setShowUpdateModal(false);
+    setUpdateStatus(null);
+  };
+
+
+  // Load storage and data integrity info
+  useEffect(() => {
+    const loadDataInfo = () => {
+      setStorageUsage(getStorageUsage());
+      setDataIntegrity(validateDataIntegrity());
+      setBackupInfo(getBackupInfo());
+    };
+    
+    loadDataInfo();
+  }, []);
 
   const handleDeleteAllData = () => {
     if (window.confirm('Are you sure you want to delete all your data? This action cannot be undone.')) {
@@ -240,7 +318,14 @@ const Settings = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-900">Version</h4>
-                  <p className="text-sm text-gray-600">1.0.0</p>
+                  <p className="text-sm text-gray-600 flex items-center space-x-2">
+                    <span>{version}</span>
+                    {updateAvailable && (
+                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                        Update Available
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-900">Platform</h4>
@@ -249,6 +334,73 @@ const Settings = () => {
                 <div>
                   <h4 className="text-sm font-medium text-gray-900">Data Storage</h4>
                   <p className="text-sm text-gray-600">LocalStorage (On Device)</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Connection Status</h4>
+                  <p className={`text-sm flex items-center space-x-2 ${
+                    isOnline ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full ${
+                      isOnline ? 'bg-green-500' : 'bg-red-500'
+                    }`}></div>
+                    <span>{isOnline ? 'Online' : 'Offline'}</span>
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Data Protection</h4>
+                  <p className={`text-sm flex items-center space-x-2 ${
+                    dataIntegrity?.isValid ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    <Shield size={16} />
+                    <span>{dataIntegrity?.isValid ? 'Data Safe' : 'Data Issues'}</span>
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Storage Usage</h4>
+                  <p className="text-sm text-gray-600">
+                    {storageUsage ? `${storageUsage.usedMB}MB / ${storageUsage.limitMB}MB (${storageUsage.percentage}%)` : 'Calculating...'}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Backup Status</h4>
+                  <p className={`text-sm flex items-center space-x-2 ${
+                    backupInfo ? 'text-green-600' : 'text-gray-600'
+                  }`}>
+                    <Database size={16} />
+                    <span>{backupInfo ? 'Backup Available' : 'No Backup'}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Update and Cache Management */}
+              <div className="pt-4 border-t border-gray-200">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Updates & Cache</h4>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={handleCheckForUpdates}
+                    className="flex items-center space-x-2 px-3 py-2 text-sm bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <RefreshCw size={16} />
+                    <span>Check for Updates</span>
+                  </button>
+                  
+                  {updateAvailable && (
+                    <button
+                      onClick={handleApplyUpdate}
+                      className="flex items-center space-x-2 px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+                    >
+                      <Download size={16} />
+                      <span>Apply Update</span>
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={() => setShowCacheClearModal(true)}
+                    className="flex items-center space-x-2 px-3 py-2 text-sm bg-orange-50 text-orange-700 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                    <span>Clear Cache</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -349,6 +501,197 @@ const Settings = () => {
         cancelText="Cancel"
         type="danger"
       />
+
+      {/* Update Check Modal */}
+      {showUpdateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  updateStatus === 'checking' ? 'bg-blue-100' :
+                  updateStatus === 'available' ? 'bg-green-100' :
+                  updateStatus === 'current' ? 'bg-blue-100' :
+                  'bg-red-100'
+                }`}>
+                  {updateStatus === 'checking' ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  ) : updateStatus === 'available' ? (
+                    <Download size={20} className="text-green-600" />
+                  ) : updateStatus === 'current' ? (
+                    <RefreshCw size={20} className="text-blue-600" />
+                  ) : (
+                    <AlertTriangle size={20} className="text-red-600" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {updateStatus === 'checking' ? 'Checking for Updates' :
+                     updateStatus === 'available' ? 'Update Available' :
+                     updateStatus === 'current' ? 'App is Up to Date' :
+                     'Update Check Failed'}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {updateStatus === 'checking' ? 'Please wait...' :
+                     updateStatus === 'available' ? 'A new version is available' :
+                     updateStatus === 'current' ? 'You have the latest version' :
+                     'Something went wrong'}
+                  </p>
+                </div>
+              </div>
+              
+              {updateStatus === 'checking' && (
+                <div className="text-center py-4">
+                  <p className="text-gray-700">Checking for updates...</p>
+                </div>
+              )}
+              
+              {isUpdating && (
+                <div className="space-y-4">
+                  <p className="text-gray-700 text-center">Updating application...</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${updateProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">{updateProgress}% complete</p>
+                </div>
+              )}
+              
+              {updateStatus === 'available' && (
+                <div className="space-y-4">
+                  <p className="text-gray-700">
+                    A new version of the app is available. Would you like to update now?
+                  </p>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-sm text-green-700">
+                      <strong>Current version:</strong> {version}
+                    </p>
+                    <p className="text-sm text-green-700">
+                      <strong>New version:</strong> Available
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {updateStatus === 'current' && (
+                <div className="space-y-4">
+                  <p className="text-gray-700">
+                    You are using the latest version of the app.
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-700">
+                      <strong>Current version:</strong> {version}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {updateStatus === 'error' && (
+                <div className="space-y-4">
+                  <p className="text-gray-700">
+                    Unable to check for updates. This might be due to network issues or the app is already up to date.
+                  </p>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-sm text-red-700">
+                      <strong>Connection status:</strong> {isOnline ? 'Online' : 'Offline'}
+                    </p>
+                    <p className="text-sm text-red-700 mt-1">
+                      <strong>Tip:</strong> Try refreshing the page or check your internet connection.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex space-x-3 mt-6">
+                {updateStatus === 'checking' || isUpdating ? (
+                  <button
+                    disabled
+                    className="flex-1 bg-gray-100 text-gray-400 font-medium py-2 px-4 rounded-lg cursor-not-allowed"
+                  >
+                    {isUpdating ? 'Updating...' : 'Checking...'}
+                  </button>
+                ) : updateStatus === 'available' ? (
+                  <>
+                    <button
+                      onClick={closeUpdateModal}
+                      className="flex-1 btn-secondary"
+                    >
+                      Later
+                    </button>
+                    <button
+                      onClick={handleApplyUpdate}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <Download size={16} />
+                      <span>Update Now</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={closeUpdateModal}
+                    className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                  >
+                    OK
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cache Clear Confirmation Modal */}
+      {showCacheClearModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Trash2 size={20} className="text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Clear Cache</h3>
+                  <p className="text-sm text-gray-600">This will clear all cached data</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 mb-6">
+                This will clear all cached files and data. The app will reload after clearing the cache. 
+                This may help resolve loading issues.
+              </p>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowCacheClearModal(false)}
+                  className="flex-1 btn-secondary"
+                  disabled={isClearingCache}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleClearCache}
+                  disabled={isClearingCache}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isClearingCache ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Clearing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={16} />
+                      <span>Clear Cache</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

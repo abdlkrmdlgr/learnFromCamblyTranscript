@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, BookOpen, Brain, Target, TrendingUp, FileText, BookOpenCheck, HelpCircle } from 'lucide-react';
+import { Plus, BookOpen, Brain, Target, TrendingUp, FileText, BookOpenCheck, HelpCircle, Download, X } from 'lucide-react';
 import LearningCard from '../components/LearningCard';
 import QuizCard from '../components/QuizCard';
 import { useTranscripts } from '../hooks/useTranscripts';
 import { useSettings } from '../hooks/useSettings';
+import { useVersion } from '../hooks/useVersion';
 import { progressStorage } from '../utils/storage';
 
 const Home = ({ showImportModal, setShowImportModal }) => {
@@ -22,6 +23,44 @@ const Home = ({ showImportModal, setShowImportModal }) => {
 
   const { transcripts, isLoading: transcriptsLoading, addTranscript, getLearningCards, getTotalStats } = useTranscripts();
   const { settings } = useSettings();
+  const { checkForUpdates, updateAvailable, applyUpdate } = useVersion();
+  const [showUpdateNotification, setShowUpdateNotification] = useState(false);
+
+  // Auto-check for updates when component mounts
+  useEffect(() => {
+    const autoCheckUpdates = async () => {
+      try {
+        const hasUpdate = await checkForUpdates();
+        if (hasUpdate) {
+          setShowUpdateNotification(true);
+        }
+      } catch (error) {
+        console.log('Auto-update check failed:', error);
+        // Silently fail - don't show error to user
+      }
+    };
+
+    // Only check if we're online and not in a session
+    if (navigator.onLine && !isSessionActive) {
+      autoCheckUpdates();
+    }
+  }, [isSessionActive, checkForUpdates]);
+
+  // Listen for update available from useVersion hook
+  useEffect(() => {
+    if (updateAvailable) {
+      setShowUpdateNotification(true);
+    }
+  }, [updateAvailable]);
+
+  const handleUpdateNow = () => {
+    applyUpdate();
+    setShowUpdateNotification(false);
+  };
+
+  const handleDismissUpdate = () => {
+    setShowUpdateNotification(false);
+  };
 
   const startSectionSession = (sectionType) => {
     const allCards = getLearningCards(50); // Get more cards to filter from
@@ -99,6 +138,38 @@ const Home = ({ showImportModal, setShowImportModal }) => {
   const renderMainDashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
+        {/* Update Notification */}
+        {showUpdateNotification && (
+          <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Download className="h-5 w-5 text-green-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-green-700">
+                    <strong>Update Available!</strong> A new version of the app is ready.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleUpdateNow}
+                  className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
+                >
+                  Update Now
+                </button>
+                <button
+                  onClick={handleDismissUpdate}
+                  className="text-green-600 hover:text-green-800 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="text-center mb-12">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Transcripts</h1>

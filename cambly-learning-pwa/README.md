@@ -30,6 +30,8 @@ Cambly konuşmalarınızdan öğrenme için geliştirilmiş Progressive Web App 
 - Türkçe çevirileri göster/gizle
 - Veri yönetimi
 - Offline depolama
+- Cache yönetimi
+- Otomatik güncelleme kontrolü
 
 ## Kurulum
 
@@ -132,6 +134,7 @@ Uygulama aşağıdaki JSON formatını bekler:
 - **Icons**: Lucide React
 - **Storage**: LocalStorage
 - **PWA**: Service Worker + Manifest
+- **Cache Management**: Versioned caching system
 
 ### Proje Yapısı
 ```
@@ -148,7 +151,8 @@ src/
 │   └── Settings.jsx
 ├── hooks/              # Custom hooks
 │   ├── useSettings.js
-│   └── useTranscripts.js
+│   ├── useTranscripts.js
+│   └── useVersion.js
 ├── utils/              # Utility fonksiyonları
 │   ├── storage.js
 │   ├── validation.js
@@ -199,6 +203,36 @@ MIT License
 3. Commit yapın (`git commit -m 'Add amazing feature'`)
 4. Push yapın (`git push origin feature/amazing-feature`)
 5. Pull Request oluşturun
+
+## Versiyon Yönetimi
+
+### Versiyon Güncelleme
+```bash
+# Patch versiyonu (1.0.0 -> 1.0.1)
+npm run version:patch
+
+# Minor versiyonu (1.0.0 -> 1.1.0)  
+npm run version:minor
+
+# Major versiyonu (1.0.0 -> 2.0.0)
+npm run version:major
+
+# Manuel versiyon
+node scripts/update-version.js 1.2.3
+```
+
+### Cache Yönetimi
+Uygulama gelişmiş cache yönetimi ile gelir:
+
+- **Otomatik Cache Temizleme**: Yeni versiyonlarda eski cache'ler otomatik silinir
+- **Versiyon Kontrolü**: Service Worker versiyon değişikliklerini algılar  
+- **Manuel Cache Temizleme**: Settings sayfasından cache temizlenebilir
+- **Güncelleme Bildirimleri**: Yeni versiyonlar kullanıcıya bildirilir
+
+### Cache Problemleri Çözümü
+1. Settings > Application Information > Clear Cache
+2. Uygulamayı yeniden yükle
+3. Gerekirse tarayıcı cache'ini temizle
 
 ## Destek
 
