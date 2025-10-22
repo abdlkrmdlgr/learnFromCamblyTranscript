@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { createBackup, autoBackup } from '../utils/backup.js';
+import { APP_VERSION } from '../config/version.js';
 
 export const useVersion = () => {
-  const [version, setVersion] = useState('1.1.12'); // Set to current version
+  const [version, setVersion] = useState(APP_VERSION); // Dynamic version from config
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isUpdating, setIsUpdating] = useState(false);

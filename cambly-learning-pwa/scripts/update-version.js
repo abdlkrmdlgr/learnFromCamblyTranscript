@@ -30,11 +30,18 @@ let swContent = fs.readFileSync(swPath, 'utf8');
 swContent = swContent.replace(/const APP_VERSION = '[^']*';/, `const APP_VERSION = '${newVersion}';`);
 fs.writeFileSync(swPath, swContent);
 
+// Update version config file
+const versionConfigPath = path.join(__dirname, '..', 'src', 'config', 'version.js');
+let versionConfigContent = fs.readFileSync(versionConfigPath, 'utf8');
+versionConfigContent = versionConfigContent.replace(/export const APP_VERSION = '[^']*';/, `export const APP_VERSION = '${newVersion}';`);
+fs.writeFileSync(versionConfigPath, versionConfigContent);
+
 console.log(`✅ Version updated to ${newVersion}`);
 console.log('📦 Updated files:');
 console.log('  - package.json');
 console.log('  - public/manifest.json');
 console.log('  - public/sw.js');
+console.log('  - src/config/version.js');
 
 function incrementVersion(version) {
   const parts = version.split('.').map(Number);
