@@ -49,7 +49,7 @@ function AppContent() {
       />
       
       {/* Version Number - Global */}
-      <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 z-10">
+      <div className="text-center py-4">
         <span className="text-xs text-gray-400">v{version}</span>
       </div>
     </div>

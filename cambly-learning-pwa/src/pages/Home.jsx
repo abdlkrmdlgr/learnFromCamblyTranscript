@@ -5,7 +5,6 @@ import LearningCard from '../components/LearningCard';
 import QuizCard from '../components/QuizCard';
 import { useTranscripts } from '../hooks/useTranscripts';
 import { useSettings } from '../hooks/useSettings';
-import { useVersion } from '../hooks/useVersion';
 import { progressStorage } from '../utils/storage';
 
 const Home = ({ showImportModal, setShowImportModal }) => {
@@ -23,7 +22,6 @@ const Home = ({ showImportModal, setShowImportModal }) => {
 
   const { transcripts, isLoading: transcriptsLoading, addTranscript, getLearningCards, getTotalStats } = useTranscripts();
   const { settings } = useSettings();
-  const { version } = useVersion();
 
 
 
@@ -160,11 +158,6 @@ const Home = ({ showImportModal, setShowImportModal }) => {
               ))}
             </div>
           )}
-        </div>
-        
-        {/* Version Number */}
-        <div className="text-center py-4">
-          <span className="text-xs text-gray-400">v{version}</span>
         </div>
       </div>
     );
