@@ -7,7 +7,6 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
   const [importMethod, setImportMethod] = useState('file'); // 'file' or 'paste'
   const [file, setFile] = useState(null);
   const [jsonText, setJsonText] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [title, setTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,7 +40,7 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
       const sanitizedData = sanitizeTranscriptData(data);
       const transcript = transcriptStorage.add({
         ...sanitizedData,
-        date: selectedDate,
+        date: new Date().toISOString().split('T')[0],
         title: title.trim() || `Transcript ${new Date().toLocaleDateString()}`
       });
 
@@ -72,7 +71,7 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
       const sanitizedData = sanitizeTranscriptData(data);
       const transcript = transcriptStorage.add({
         ...sanitizedData,
-        date: selectedDate,
+        date: new Date().toISOString().split('T')[0],
         title: title.trim() || `Transcript ${new Date().toLocaleDateString()}`
       });
 
@@ -88,7 +87,6 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
   const resetForm = () => {
     setFile(null);
     setJsonText('');
-    setSelectedDate(new Date().toISOString().split('T')[0]);
     setTitle('');
     setError('');
   };
@@ -158,60 +156,6 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
             </div>
           </div>
 
-          {/* Date Selection */}
-          <div className="space-y-2">
-            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-              <Calendar size={16} />
-              <span>Conversation Date</span>
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              <input
-                type="number"
-                placeholder="YYYY"
-                min="2020"
-                max={new Date().getFullYear()}
-                value={selectedDate.split('-')[0]}
-                onChange={(e) => {
-                  const year = e.target.value;
-                  const [_, month, day] = selectedDate.split('-');
-                  setSelectedDate(`${year}-${month}-${day}`);
-                }}
-                className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm text-center"
-                style={{ fontSize: '16px' }}
-              />
-              <input
-                type="number"
-                placeholder="MM"
-                min="1"
-                max="12"
-                value={selectedDate.split('-')[1]}
-                onChange={(e) => {
-                  const month = e.target.value.padStart(2, '0');
-                  const [year, _, day] = selectedDate.split('-');
-                  setSelectedDate(`${year}-${month}-${day}`);
-                }}
-                className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm text-center"
-                style={{ fontSize: '16px' }}
-              />
-              <input
-                type="number"
-                placeholder="DD"
-                min="1"
-                max="31"
-                value={selectedDate.split('-')[2]}
-                onChange={(e) => {
-                  const day = e.target.value.padStart(2, '0');
-                  const [year, month, _] = selectedDate.split('-');
-                  setSelectedDate(`${year}-${month}-${day}`);
-                }}
-                className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm text-center"
-                style={{ fontSize: '16px' }}
-              />
-            </div>
-            <p className="text-xs text-gray-500">
-              Enter the date when this conversation took place
-            </p>
-          </div>
 
           {/* File Upload */}
           {importMethod === 'file' && (
