@@ -3,8 +3,6 @@ import { Star } from 'lucide-react';
 import { favoritesStorage } from '../utils/storage';
 
 const LearningCard = ({ card, onComplete, showTurkish = false, transcriptId }) => {
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const cardRef = useRef(null);
 
@@ -33,29 +31,6 @@ const LearningCard = ({ card, onComplete, showTurkish = false, transcriptId }) =
   };
 
 
-  // Touch handlers for swipe gestures
-  const handleTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe) {
-      handleNext();
-    } else if (isRightSwipe) {
-      handlePrevious();
-    }
-  };
 
   // Touch handlers for double tap gestures
   const handleDoubleTap = (e) => {
@@ -78,9 +53,6 @@ const LearningCard = ({ card, onComplete, showTurkish = false, transcriptId }) =
     <div 
       ref={cardRef}
       className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[350px] flex flex-col"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       onDoubleClick={handleDoubleTap}
     >
       {/* Header with Star Button */}
@@ -136,7 +108,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false, transcriptId }) =
 
       {/* Navigation */}
       <div className="p-3 md:p-4 border-t border-gray-200">
-        {/* Mobile Swipe Hint */}
+        {/* Mobile Double Tap Hint */}
         <div className="md:hidden text-center mb-2">
           <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
             <span>←</span>
@@ -174,9 +146,6 @@ const LearningCard = ({ card, onComplete, showTurkish = false, transcriptId }) =
     <div 
       ref={cardRef}
       className="bg-white rounded-xl shadow-lg border border-gray-200 min-h-[350px] flex flex-col"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       onDoubleClick={handleDoubleTap}
     >
       {/* Header with Star Button */}
@@ -229,7 +198,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false, transcriptId }) =
 
       {/* Navigation */}
       <div className="p-3 md:p-4 border-t border-gray-200">
-        {/* Mobile Swipe Hint */}
+        {/* Mobile Double Tap Hint */}
         <div className="md:hidden text-center mb-2">
           <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
             <span>←</span>
