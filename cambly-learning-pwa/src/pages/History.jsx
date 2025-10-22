@@ -74,7 +74,7 @@ const History = () => {
         ) : (
           <div className="space-y-4">
             {transcripts
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
               .map(transcript => {
                 const stats = getTranscriptStats(transcript);
                 return (

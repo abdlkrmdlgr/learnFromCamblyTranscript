@@ -510,7 +510,14 @@ const TranscriptDetail = () => {
                   </div>
                   <div className="flex items-center space-x-1">
                     <BookOpen size={12} />
-                    <span>{new Date(transcript.createdAt).toLocaleDateString()}</span>
+                    <span>{new Date(transcript.createdAt).toLocaleString('tr-TR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    })}</span>
                   </div>
                 </div>
               </div>

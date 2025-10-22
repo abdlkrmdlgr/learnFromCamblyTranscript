@@ -119,7 +119,7 @@ const Home = ({ showImportModal, setShowImportModal }) => {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {transcripts
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                   .map((transcript) => (
                 <div key={transcript.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
                   <div className="flex items-start justify-between mb-4">
@@ -128,7 +128,14 @@ const Home = ({ showImportModal, setShowImportModal }) => {
                       <p className="text-sm text-gray-500">{transcript.date}</p>
                     </div>
                     <div className="text-xs text-gray-400">
-                      {new Date(transcript.createdAt).toLocaleDateString()}
+                      {new Date(transcript.createdAt).toLocaleString('tr-TR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                      })}
                     </div>
                   </div>
                   
