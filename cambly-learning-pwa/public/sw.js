@@ -1,13 +1,13 @@
-const APP_VERSION = '1.0.3';
+const APP_VERSION = '1.0.4';
 const CACHE_NAME = `cambly-learning-v${APP_VERSION}`;
 const STATIC_CACHE = `cambly-static-v${APP_VERSION}`;
 const DYNAMIC_CACHE = `cambly-dynamic-v${APP_VERSION}`;
 
 const urlsToCache = [
-  '/',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/learnFromCamblyTranscript/',
+  '/learnFromCamblyTranscript/manifest.json',
+  '/learnFromCamblyTranscript/icon-192.png',
+  '/learnFromCamblyTranscript/icon-512.png'
 ];
 
 // Install event - cache static assets
@@ -33,7 +33,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          // Delete old caches that don't match current version
+          // Delete ALL old caches aggressively
           if (cacheName.startsWith('cambly-') && 
               cacheName !== STATIC_CACHE && 
               cacheName !== DYNAMIC_CACHE) {
@@ -45,6 +45,16 @@ self.addEventListener('activate', (event) => {
     }).then(() => {
       // Take control of all clients immediately
       return self.clients.claim();
+    }).then(() => {
+      // Notify all clients about the update
+      return self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({
+            type: 'SW_UPDATE_AVAILABLE',
+            version: APP_VERSION
+          });
+        });
+      });
     })
   );
 });
@@ -94,7 +104,7 @@ self.addEventListener('fetch', (event) => {
           .catch(() => {
             // Return offline page for navigation requests
             if (request.mode === 'navigate') {
-              return caches.match('/');
+              return caches.match('/learnFromCamblyTranscript/');
             }
           });
       })
@@ -108,34 +118,7 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Notify clients about updates
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    self.clients.matchAll().then((clients) => {
-      clients.forEach((client) => {
-        client.postMessage({
-          type: 'SW_UPDATE_AVAILABLE',
-          version: APP_VERSION
-        });
-      });
-    })
-  );
-});
-
 // Listen for messages from clients
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-// Handle service worker updates
-self.addEventListener('install', (event) => {
-  // Force activation of new service worker
-  self.skipWaiting();
-});
-
-// Notify all clients when new service worker is available
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CHECK_FOR_UPDATES') {
     // Check if there's a waiting service worker
@@ -146,4 +129,18 @@ self.addEventListener('message', (event) => {
       });
     }
   }
+});
+
+// Force update check on every activation
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    self.clients.matchAll().then((clients) => {
+      clients.forEach((client) => {
+        client.postMessage({
+          type: 'SW_VERSION_UPDATE',
+          version: APP_VERSION
+        });
+      });
+    })
+  );
 });

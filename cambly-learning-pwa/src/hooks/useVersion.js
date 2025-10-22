@@ -27,7 +27,7 @@ export const useVersion = () => {
 
         // Listen for messages from service worker
         navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data.type === 'SW_UPDATE_AVAILABLE') {
+          if (event.data.type === 'SW_UPDATE_AVAILABLE' || event.data.type === 'SW_VERSION_UPDATE') {
             console.log('Service worker update available:', event.data.version);
             setVersion(event.data.version);
             setUpdateAvailable(true);
@@ -39,6 +39,11 @@ export const useVersion = () => {
           console.log('Waiting service worker found');
           setUpdateAvailable(true);
         }
+
+        // Force check for updates on load
+        registration.update().catch(() => {
+          // Ignore errors, this is normal when no updates
+        });
       });
     }
 
@@ -175,11 +180,25 @@ export const useVersion = () => {
   const clearCache = async () => {
     if ('caches' in window) {
       try {
+        // Only clear PWA-related caches, preserve user data
         const cacheNames = await caches.keys();
-        await Promise.all(
-          cacheNames.map(cacheName => caches.delete(cacheName))
+        const pwaCaches = cacheNames.filter(cacheName => 
+          cacheName.startsWith('cambly-') || 
+          cacheName.startsWith('workbox-') ||
+          cacheName.includes('vite-')
         );
-        console.log('All caches cleared');
+        
+        await Promise.all(
+          pwaCaches.map(cacheName => caches.delete(cacheName))
+        );
+        console.log('PWA caches cleared, user data preserved');
+        
+        // Clear only sessionStorage, NOT localStorage (to preserve user data)
+        sessionStorage.clear();
+        
+        // Force reload to get fresh version
+        window.location.reload();
+        
         return true;
       } catch (error) {
         console.error('Error clearing cache:', error);
