@@ -241,38 +241,24 @@ const Settings = () => {
                         const stats = getTranscriptStats(transcript);
                         return (
                           <div key={transcript.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                   <Calendar size={16} className="text-primary-600" />
                                 </div>
-                                <div>
-                                  <h5 className="text-sm font-semibold text-gray-900">
+                                <div className="min-w-0 flex-1">
+                                  <h5 className="text-sm font-semibold text-gray-900 truncate">
                                     {formatDate(transcript.date)}
                                   </h5>
-                                  <div className="flex items-center space-x-2 text-xs text-gray-600">
-                                    <span className="flex items-center space-x-1">
-                                      <FileText size={12} />
-                                      <span>{stats.grammar} grammar</span>
-                                    </span>
-                                    <span className="flex items-center space-x-1">
-                                      <Brain size={12} />
-                                      <span>{stats.vocabulary} vocabulary</span>
-                                    </span>
-                                    <span className="flex items-center space-x-1">
-                                      <Target size={12} />
-                                      <span>{stats.quiz} quiz</span>
-                                    </span>
-                                  </div>
                                 </div>
                               </div>
-                              <div className="flex items-center space-x-1">
+                              <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
                                 <button
                                   onClick={() => handleViewTranscript(transcript.id)}
                                   className="flex items-center space-x-1 px-2 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
                                 >
                                   <EyeIcon size={12} />
-                                  <span>View</span>
+                                  <span className="hidden sm:inline">View</span>
                                 </button>
                                 <button
                                   onClick={() => handleDeleteTranscript(transcript.id)}
@@ -281,6 +267,20 @@ const Settings = () => {
                                   <Trash2 size={14} />
                                 </button>
                               </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                              <span className="flex items-center space-x-1 bg-gray-100 px-2 py-1 rounded">
+                                <FileText size={12} />
+                                <span>{stats.grammar} grammar</span>
+                              </span>
+                              <span className="flex items-center space-x-1 bg-gray-100 px-2 py-1 rounded">
+                                <Brain size={12} />
+                                <span>{stats.vocabulary} vocabulary</span>
+                              </span>
+                              <span className="flex items-center space-x-1 bg-gray-100 px-2 py-1 rounded">
+                                <Target size={12} />
+                                <span>{stats.quiz} quiz</span>
+                              </span>
                             </div>
                           </div>
                         );
