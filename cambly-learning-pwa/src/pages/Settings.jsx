@@ -4,6 +4,7 @@ import { Settings as SettingsIcon, Trash2, AlertTriangle, Eye, EyeOff, Info, Cal
 import { useSettings } from '../hooks/useSettings';
 import { useTranscripts } from '../hooks/useTranscripts';
 import { useVersion } from '../hooks/useVersion';
+import { useDialogManager } from '../hooks/useDialogManager';
 import { progressStorage } from '../utils/storage';
 import { getStorageUsage, validateDataIntegrity, hasBackup, getBackupInfo } from '../utils/backup';
 import ConfirmModal from '../components/ConfirmModal';
@@ -13,10 +14,8 @@ const Settings = () => {
   const { settings, updateSettings, toggleTurkish } = useSettings();
   const { transcripts, deleteTranscript } = useTranscripts();
   const { version, isOnline, clearCache } = useVersion();
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showDeleteTranscriptModal, setShowDeleteTranscriptModal] = useState(false);
+  const { activeDialog, dialogData, openCustomDialog, closeDialog, isDialogOpen } = useDialogManager();
   const [transcriptToDelete, setTranscriptToDelete] = useState(null);
-  const [showCacheClearModal, setShowCacheClearModal] = useState(false);
   const [isClearingCache, setIsClearingCache] = useState(false);
   const [storageUsage, setStorageUsage] = useState(null);
   const [dataIntegrity, setDataIntegrity] = useState(null);
@@ -50,19 +49,19 @@ const Settings = () => {
 
   const handleDeleteTranscript = (id) => {
     setTranscriptToDelete(id);
-    setShowDeleteTranscriptModal(true);
+    openCustomDialog('deleteTranscript', { transcriptId: id });
   };
 
   const confirmDeleteTranscript = () => {
     if (transcriptToDelete) {
       deleteTranscript(transcriptToDelete);
-      setShowDeleteTranscriptModal(false);
+      closeDialog();
       setTranscriptToDelete(null);
     }
   };
 
   const cancelDeleteTranscript = () => {
-    setShowDeleteTranscriptModal(false);
+    closeDialog();
     setTranscriptToDelete(null);
   };
 
@@ -71,17 +70,20 @@ const Settings = () => {
     try {
       const success = await clearCache();
       if (success) {
-        alert('Cache başarıyla temizlendi. Sayfa yeniden yüklenecek.');
+        // Dialog'u kapat ve sayfayı yenile
+        closeDialog();
         window.location.reload();
       } else {
-        alert('Cache temizlenirken bir hata oluştu.');
+        // Hata durumunda dialog'u kapat ve hata mesajı göster
+        closeDialog();
+        openCustomDialog('cacheError');
       }
     } catch (error) {
       console.error('Cache clear error:', error);
-      alert('Cache temizlenirken bir hata oluştu.');
+      closeDialog();
+      openCustomDialog('cacheError');
     } finally {
       setIsClearingCache(false);
-      setShowCacheClearModal(false);
     }
   };
 
@@ -99,16 +101,14 @@ const Settings = () => {
   }, []);
 
   const handleDeleteAllData = () => {
-    if (window.confirm('Are you sure you want to delete all your data? This action cannot be undone.')) {
-      const success = progressStorage.clearAll();
-      if (success) {
-        alert('All data has been successfully deleted. The page will refresh.');
-        window.location.reload();
-      } else {
-        alert('An error occurred while deleting data.');
-      }
+    const success = progressStorage.clearAll();
+    if (success) {
+      closeDialog();
+      window.location.reload();
+    } else {
+      closeDialog();
+      openCustomDialog('deleteError');
     }
-    setShowDeleteConfirm(false);
   };
 
   return (
@@ -259,7 +259,7 @@ const Settings = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => setShowDeleteConfirm(true)}
+                  onClick={() => openCustomDialog('deleteAllData')}
                   className="flex items-center space-x-2 px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
                 >
                   <Trash2 size={16} />
@@ -334,7 +334,7 @@ const Settings = () => {
                 <h4 className="text-sm font-medium text-gray-900 mb-3">Cache Management</h4>
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => setShowCacheClearModal(true)}
+                    onClick={() => openCustomDialog('clearCache')}
                     className="flex items-center space-x-2 px-3 py-2 text-sm bg-orange-50 text-orange-700 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors"
                   >
                     <Trash2 size={16} />
@@ -408,107 +408,177 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Delete All Data Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle size={20} className="text-red-600" />
+      {/* Unified Dialog System - Only one dialog can be open at a time */}
+      {isDialogOpen && (
+        <>
+          {/* Delete All Data Dialog */}
+          {activeDialog === 'deleteAllData' && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                      <AlertTriangle size={20} className="text-red-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Delete All Data</h3>
+                      <p className="text-sm text-gray-600">This action cannot be undone</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6">
+                    All transcripts, progress records and settings will be deleted. 
+                    Are you sure you want to confirm this action?
+                  </p>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={closeDialog}
+                      className="flex-1 btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDeleteAllData}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Delete All Data</h3>
-                  <p className="text-sm text-gray-600">This action cannot be undone</p>
-                </div>
-              </div>
-              
-              <p className="text-gray-700 mb-6">
-                All transcripts, progress records and settings will be deleted. 
-                Are you sure you want to confirm this action?
-              </p>
-              
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteAllData}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                >
-                  Delete
-                </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Delete Transcript Confirmation Modal */}
-      <ConfirmModal
-        isOpen={showDeleteTranscriptModal}
-        onClose={cancelDeleteTranscript}
-        onConfirm={confirmDeleteTranscript}
-        title="Delete Transcript"
-        message="Are you sure you want to delete this transcript? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
-        type="danger"
-      />
+          {/* Delete Transcript Dialog */}
+          {activeDialog === 'deleteTranscript' && (
+            <ConfirmModal
+              isOpen={true}
+              onClose={cancelDeleteTranscript}
+              onConfirm={confirmDeleteTranscript}
+              title="Delete Transcript"
+              message="Are you sure you want to delete this transcript? This action cannot be undone."
+              confirmText="Delete"
+              cancelText="Cancel"
+              type="danger"
+            />
+          )}
 
-
-      {/* Cache Clear Confirmation Modal */}
-      {showCacheClearModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Trash2 size={20} className="text-orange-600" />
+          {/* Clear Cache Dialog */}
+          {activeDialog === 'clearCache' && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <Trash2 size={20} className="text-orange-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Clear Cache</h3>
+                      <p className="text-sm text-gray-600">This will clear all cached data</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6">
+                    This will clear all cached files and data. The app will reload after clearing the cache. 
+                    This may help resolve loading issues.
+                  </p>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={closeDialog}
+                      className="flex-1 btn-secondary"
+                      disabled={isClearingCache}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleClearCache}
+                      disabled={isClearingCache}
+                      className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    >
+                      {isClearingCache ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Clearing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 size={16} />
+                          <span>Clear Cache</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Clear Cache</h3>
-                  <p className="text-sm text-gray-600">This will clear all cached data</p>
-                </div>
-              </div>
-              
-              <p className="text-gray-700 mb-6">
-                This will clear all cached files and data. The app will reload after clearing the cache. 
-                This may help resolve loading issues.
-              </p>
-              
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => setShowCacheClearModal(false)}
-                  className="flex-1 btn-secondary"
-                  disabled={isClearingCache}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleClearCache}
-                  disabled={isClearingCache}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                >
-                  {isClearingCache ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Clearing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 size={16} />
-                      <span>Clear Cache</span>
-                    </>
-                  )}
-                </button>
               </div>
             </div>
-          </div>
-        </div>
+          )}
+
+          {/* Cache Error Dialog */}
+          {activeDialog === 'cacheError' && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                      <AlertTriangle size={20} className="text-red-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Cache Clear Error</h3>
+                      <p className="text-sm text-gray-600">An error occurred while clearing cache</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6">
+                    Cache temizlenirken bir hata oluştu. Lütfen tekrar deneyin.
+                  </p>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={closeDialog}
+                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Delete Error Dialog */}
+          {activeDialog === 'deleteError' && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                      <AlertTriangle size={20} className="text-red-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Delete Error</h3>
+                      <p className="text-sm text-gray-600">An error occurred while deleting data</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6">
+                    An error occurred while deleting data. Please try again.
+                  </p>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={closeDialog}
+                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
