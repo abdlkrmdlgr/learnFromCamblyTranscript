@@ -7,11 +7,13 @@ import Statistics from './pages/Statistics';
 import Settings from './pages/Settings';
 import TranscriptDetail from './pages/TranscriptDetail';
 import ImportModal from './components/ImportModal';
+import { useVersion } from './hooks/useVersion';
 
 function AppContent() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [homeKey, setHomeKey] = useState(0);
   const navigate = useNavigate();
+  const { version } = useVersion();
 
   const handleImportClick = () => {
     setShowImportModal(true);
@@ -45,6 +47,11 @@ function AppContent() {
         onClose={() => setShowImportModal(false)}
         onImport={handleImport}
       />
+      
+      {/* Version Number - Global */}
+      <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 z-10">
+        <span className="text-xs text-gray-400">v{version}</span>
+      </div>
     </div>
   );
 }
