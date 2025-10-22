@@ -349,7 +349,9 @@ const Settings = () => {
                         await Promise.all(cacheNames.map(name => caches.delete(name)));
                       }
                       localStorage.removeItem('lastUpdateCheck');
-                      window.location.reload();
+                      
+                      // Force reload with cache bypass
+                      window.location.href = window.location.href + '?v=' + Date.now();
                     }}
                     className="flex items-center space-x-2 px-3 py-2 text-sm bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
                   >

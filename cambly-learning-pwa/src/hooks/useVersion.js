@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createBackup, autoBackup } from '../utils/backup.js';
 
 export const useVersion = () => {
-  const [version, setVersion] = useState('1.1.10'); // Set to current version
+  const [version, setVersion] = useState('1.1.11'); // Set to current version
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isUpdating, setIsUpdating] = useState(false);

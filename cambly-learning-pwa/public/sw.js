@@ -1,4 +1,4 @@
-const APP_VERSION = '1.1.10';
+const APP_VERSION = '1.1.11';
 const CACHE_NAME = `cambly-learning-v${APP_VERSION}`;
 const STATIC_CACHE = `cambly-static-v${APP_VERSION}`;
 const DYNAMIC_CACHE = `cambly-dynamic-v${APP_VERSION}`;
@@ -77,7 +77,29 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request)
       .then((cachedResponse) => {
-        // Return cached version if available
+        // For CSS and JS files, always try network first for updates
+        if (request.url.includes('.css') || request.url.includes('.js')) {
+          return fetch(request)
+            .then((response) => {
+              if (response && response.status === 200) {
+                // Cache the new version
+                const responseToCache = response.clone();
+                caches.open(STATIC_CACHE)
+                  .then((cache) => {
+                    cache.put(request, responseToCache);
+                  });
+                return response;
+              }
+              // If network fails, return cached version
+              return cachedResponse || response;
+            })
+            .catch(() => {
+              // If network fails, return cached version
+              return cachedResponse;
+            });
+        }
+
+        // Return cached version if available for other resources
         if (cachedResponse) {
           return cachedResponse;
         }
