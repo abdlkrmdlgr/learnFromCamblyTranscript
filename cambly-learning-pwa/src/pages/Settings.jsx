@@ -198,7 +198,7 @@ const Settings = () => {
                 ) : (
                   <div className="space-y-2">
                     {transcripts
-                      .sort((a, b) => new Date(b.date) - new Date(a.date))
+                      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                       .map(transcript => {
                         const stats = getTranscriptStats(transcript);
                         return (
@@ -210,8 +210,11 @@ const Settings = () => {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <h5 className="text-sm font-semibold text-gray-900 truncate">
-                                    {formatDate(transcript.date)}
+                                    {transcript.title}
                                   </h5>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {formatDate(transcript.date)}
+                                  </p>
                                 </div>
                               </div>
                               <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
