@@ -164,26 +164,25 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
               <Calendar size={16} />
               <span>Conversation Date</span>
             </label>
-            <div className="w-full overflow-hidden">
+            <div className="relative w-full">
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors hover:border-gray-400 text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors hover:border-gray-400 text-sm"
                 max={new Date().toISOString().split('T')[0]}
                 style={{
                   colorScheme: 'light',
                   cursor: 'pointer',
-                  fontSize: '16px', // Prevent zoom on iOS
-                  minWidth: '0', // Prevent overflow
+                  fontSize: '16px',
                   width: '100%',
-                  maxWidth: '100%',
                   boxSizing: 'border-box',
-                  paddingLeft: '8px',
-                  paddingRight: '8px',
+                  padding: '8px 12px',
                   margin: '0',
                   border: '1px solid #d1d5db',
-                  borderRadius: '0.5rem'
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  outline: 'none'
                 }}
               />
             </div>
