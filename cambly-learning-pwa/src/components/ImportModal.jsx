@@ -101,10 +101,10 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[95vh] overflow-y-auto mx-2 sm:mx-0">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">Import JSON File</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-1 sm:p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[95vh] overflow-y-auto mx-1 sm:mx-0">
+        <div className="flex items-center justify-between p-3 sm:p-6 border-b">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Import JSON File</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -113,7 +113,7 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
           {/* Title Input */}
           <div className="space-y-2">
             <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
@@ -164,21 +164,29 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
               <Calendar size={16} />
               <span>Conversation Date</span>
             </label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors hover:border-gray-400 text-sm"
-              max={new Date().toISOString().split('T')[0]}
-              style={{
-                colorScheme: 'light',
-                cursor: 'pointer',
-                fontSize: '16px', // Prevent zoom on iOS
-                minWidth: '0', // Prevent overflow
-                width: '100%',
-                maxWidth: '100%'
-              }}
-            />
+            <div className="w-full overflow-hidden">
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors hover:border-gray-400 text-sm"
+                max={new Date().toISOString().split('T')[0]}
+                style={{
+                  colorScheme: 'light',
+                  cursor: 'pointer',
+                  fontSize: '16px', // Prevent zoom on iOS
+                  minWidth: '0', // Prevent overflow
+                  width: '100%',
+                  maxWidth: '100%',
+                  boxSizing: 'border-box',
+                  paddingLeft: '8px',
+                  paddingRight: '8px',
+                  margin: '0',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.5rem'
+                }}
+              />
+            </div>
             <p className="text-xs text-gray-500">
               Select the date when this conversation took place
             </p>
