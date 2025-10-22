@@ -94,7 +94,8 @@ const Settings = () => {
     setShowUpdateModal(true);
     
     try {
-      const hasUpdate = await checkForUpdates();
+      // Force update check to bypass cache
+      const hasUpdate = await checkForUpdates(true);
       if (hasUpdate) {
         setUpdateStatus('available');
       } else {
@@ -400,6 +401,22 @@ const Settings = () => {
                   >
                     <Trash2 size={16} />
                     <span>Clear Cache</span>
+                  </button>
+                  
+                  <button
+                    onClick={async () => {
+                      // Force clear all caches and reload
+                      if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        await Promise.all(cacheNames.map(name => caches.delete(name)));
+                      }
+                      localStorage.removeItem('lastUpdateCheck');
+                      window.location.reload();
+                    }}
+                    className="flex items-center space-x-2 px-3 py-2 text-sm bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    <RefreshCw size={16} />
+                    <span>Force Update</span>
                   </button>
                 </div>
               </div>

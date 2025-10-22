@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createBackup, autoBackup } from '../utils/backup.js';
 
 export const useVersion = () => {
-  const [version, setVersion] = useState('1.0.0');
+  const [version, setVersion] = useState('1.0.5'); // Set to current version
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -63,13 +63,18 @@ export const useVersion = () => {
   const checkForUpdates = async (force = false) => {
     if ('serviceWorker' in navigator) {
       try {
+        // Force clear update check cache for aggressive checking
+        if (force) {
+          localStorage.removeItem('lastUpdateCheck');
+        }
+        
         // Check if we should skip update check (to avoid too frequent checks)
         if (!force) {
           const lastCheck = localStorage.getItem('lastUpdateCheck');
           const now = Date.now();
-          const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+          const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
           
-          if (lastCheck && (now - parseInt(lastCheck)) < oneHour) {
+          if (lastCheck && (now - parseInt(lastCheck)) < fiveMinutes) {
             console.log('Skipping update check - checked recently');
             return false;
           }
