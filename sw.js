@@ -1,4 +1,4 @@
-const APP_VERSION = '1.1.4';
+const APP_VERSION = '1.1.5';
 const CACHE_NAME = `cambly-learning-v${APP_VERSION}`;
 const STATIC_CACHE = `cambly-static-v${APP_VERSION}`;
 const DYNAMIC_CACHE = `cambly-dynamic-v${APP_VERSION}`;
