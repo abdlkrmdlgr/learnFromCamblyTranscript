@@ -252,19 +252,19 @@ const Settings = () => {
                                   </h5>
                                 </div>
                               </div>
-                              <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
+                              <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
                                 <button
                                   onClick={() => handleViewTranscript(transcript.id)}
-                                  className="flex items-center space-x-1 px-2 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                                  className="flex items-center space-x-1 px-3 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
                                 >
-                                  <EyeIcon size={12} />
+                                  <EyeIcon size={16} />
                                   <span className="hidden sm:inline">View</span>
                                 </button>
                                 <button
                                   onClick={() => handleDeleteTranscript(transcript.id)}
-                                  className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
                                 >
-                                  <Trash2 size={14} />
+                                  <Trash2 size={18} />
                                 </button>
                               </div>
                             </div>
