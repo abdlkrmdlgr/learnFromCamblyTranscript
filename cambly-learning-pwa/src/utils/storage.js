@@ -29,25 +29,6 @@ export const transcriptStorage = {
       const transcripts = transcriptStorage.getAll();
       console.log('Current transcripts in storage:', transcripts);
       
-      // Duplicate check - is there a transcript with the same date?
-      const existingTranscript = transcripts.find(t => t.date === transcript.date);
-      if (existingTranscript) {
-        console.log('Duplicate transcript found, updating existing one:', existingTranscript);
-        // Update existing transcript
-        existingTranscript.title = transcript.title || existingTranscript.title;
-        existingTranscript.grammar_mistakes = transcript.grammar_mistakes || existingTranscript.grammar_mistakes;
-        existingTranscript.vocabulary_suggestions = transcript.vocabulary_suggestions || existingTranscript.vocabulary_suggestions;
-        existingTranscript.quizzes = transcript.quizzes || existingTranscript.quizzes;
-        existingTranscript.updatedAt = new Date().toISOString();
-        
-        localStorage.setItem(STORAGE_KEYS.TRANSCRIPTS, JSON.stringify(transcripts));
-        
-        // Custom event dispatch for same-tab updates
-        window.dispatchEvent(new CustomEvent('dataUpdated'));
-        
-        return existingTranscript;
-      }
-      
       const newTranscript = {
         id: crypto.randomUUID(),
         title: transcript.title || `Transcript ${new Date().toLocaleDateString()}`,
