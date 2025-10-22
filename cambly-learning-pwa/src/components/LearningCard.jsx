@@ -38,8 +38,8 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
     }
   };
 
-  // Touch handlers for tap gestures
-  const handleTap = (e) => {
+  // Touch handlers for double tap gestures
+  const handleDoubleTap = (e) => {
     if (!cardRef.current) return;
     
     const rect = cardRef.current.getBoundingClientRect();
@@ -62,7 +62,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={handleTap}
+      onDoubleClick={handleDoubleTap}
     >
       {/* Content */}
       <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-4">
@@ -106,7 +106,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
         <div className="md:hidden text-center mb-2">
           <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
             <span>←</span>
-            <span>Swipe to navigate</span>
+            <span>Double tap to navigate</span>
             <span>→</span>
           </p>
         </div>
@@ -143,7 +143,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={handleTap}
+      onDoubleClick={handleDoubleTap}
     >
       {/* Content */}
       <div className="flex-1 p-4 md:p-6 flex flex-col justify-center space-y-4">
@@ -184,7 +184,7 @@ const LearningCard = ({ card, onComplete, showTurkish = false }) => {
         <div className="md:hidden text-center mb-2">
           <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
             <span>←</span>
-            <span>Swipe to navigate</span>
+            <span>Double tap to navigate</span>
             <span>→</span>
           </p>
         </div>
