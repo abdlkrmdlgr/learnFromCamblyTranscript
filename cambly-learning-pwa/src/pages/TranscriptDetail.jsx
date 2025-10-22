@@ -139,6 +139,11 @@ const TranscriptDetail = () => {
     setIsSessionActive(true);
     setSessionComplete(false);
     setActiveSection(sectionType);
+    
+    // Scroll to top when session starts
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
   };
 
   const startSectionSession = (sectionType, resumeFromProgress = false, targetCard = null) => {
@@ -185,6 +190,11 @@ const TranscriptDetail = () => {
     setIsSessionActive(true);
     setSessionComplete(false);
     setActiveSection(sectionType);
+    
+    // Scroll to top when session starts
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
   };
 
   const handleCardComplete = (action) => {

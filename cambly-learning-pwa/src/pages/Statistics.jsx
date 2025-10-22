@@ -8,7 +8,6 @@ const Statistics = () => {
   
   const { transcripts, getTotalStats } = useTranscripts();
 
-
   const loadStats = useCallback(async () => {
     try {
       const progress = progressStorage.get();

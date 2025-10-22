@@ -7,6 +7,7 @@ import Statistics from './pages/Statistics';
 import Settings from './pages/Settings';
 import TranscriptDetail from './pages/TranscriptDetail';
 import ImportModal from './components/ImportModal';
+import ScrollToTop from './components/ScrollToTop';
 import { useVersion } from './hooks/useVersion';
 
 function AppContent() {
@@ -30,6 +31,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ScrollToTop />
       <Header onImportClick={handleImportClick} />
       <main>
         <Routes>
