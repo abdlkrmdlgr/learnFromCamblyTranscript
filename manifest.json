@@ -2,7 +2,7 @@
   "name": "Cambly Learning PWA",
   "short_name": "CamblyXL",
   "description": "Cambly konuşmalarından öğrenme uygulaması",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "start_url": "/learnFromCamblyTranscript/",
   "display": "standalone",
   "background_color": "#ffffff",
