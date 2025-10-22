@@ -164,30 +164,52 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
               <Calendar size={16} />
               <span>Conversation Date</span>
             </label>
-            <div className="relative w-full">
+            <div className="grid grid-cols-3 gap-2">
               <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors hover:border-gray-400 text-sm"
-                max={new Date().toISOString().split('T')[0]}
-                style={{
-                  colorScheme: 'light',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  padding: '8px 12px',
-                  margin: '0',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  backgroundColor: 'white',
-                  outline: 'none'
+                type="number"
+                placeholder="YYYY"
+                min="2020"
+                max={new Date().getFullYear()}
+                value={selectedDate.split('-')[0]}
+                onChange={(e) => {
+                  const year = e.target.value;
+                  const [_, month, day] = selectedDate.split('-');
+                  setSelectedDate(`${year}-${month}-${day}`);
                 }}
+                className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm text-center"
+                style={{ fontSize: '16px' }}
+              />
+              <input
+                type="number"
+                placeholder="MM"
+                min="1"
+                max="12"
+                value={selectedDate.split('-')[1]}
+                onChange={(e) => {
+                  const month = e.target.value.padStart(2, '0');
+                  const [year, _, day] = selectedDate.split('-');
+                  setSelectedDate(`${year}-${month}-${day}`);
+                }}
+                className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm text-center"
+                style={{ fontSize: '16px' }}
+              />
+              <input
+                type="number"
+                placeholder="DD"
+                min="1"
+                max="31"
+                value={selectedDate.split('-')[2]}
+                onChange={(e) => {
+                  const day = e.target.value.padStart(2, '0');
+                  const [year, month, _] = selectedDate.split('-');
+                  setSelectedDate(`${year}-${month}-${day}`);
+                }}
+                className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm text-center"
+                style={{ fontSize: '16px' }}
               />
             </div>
             <p className="text-xs text-gray-500">
-              Select the date when this conversation took place
+              Enter the date when this conversation took place
             </p>
           </div>
 
